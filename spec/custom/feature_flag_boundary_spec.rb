@@ -14,11 +14,24 @@ RSpec.describe 'CoopFlow feature-flag boundary' do
     expect(feature_names.grep(/\A(coop|coopflow)/)).to be_empty
   end
 
-  it 'keeps ModuleSetting/ModuleDefault references inside coop_core/feature/ or their own model file' do
+  it 'keeps ModuleSetting/ModuleDefault references inside coop_core/feature/, their own model file, or sanctioned wiring' do
+    # Sanctioned exceptions, beyond the resolution machinery itself: files
+    # that only need to *name* CoopCore::ModuleSetting for Rails/Pundit
+    # wiring (association class_name:, Pundit policy resolution via
+    # coop_resource_class) rather than to read or write flag state directly.
+    # All actual reads/writes go through CoopCore::Feature -- see
+    # ModulesController#update (CoopCore::Feature.set_account_override) and
+    # CoopCore::Feature::Resolver (reads).
+    wiring_only_files = %w[
+      custom/app/controllers/api/v1/accounts/coop/modules_controller.rb
+      custom/app/models/custom/concerns/account.rb
+    ]
+
     offending_files = Dir[Rails.root.join('custom/{app,lib}/**/*.rb')].select do |path|
       next false if path.include?('/coop_core/feature/')
       next false if path.end_with?('/coop_core/feature.rb') # the Feature namespace file itself
       next false if File.basename(path).in?(%w[module_setting.rb module_default.rb])
+      next false if wiring_only_files.any? { |wiring_path| path.end_with?(wiring_path) }
 
       File.read(path).match?(/\bModuleSetting\b|\bModuleDefault\b/)
     end

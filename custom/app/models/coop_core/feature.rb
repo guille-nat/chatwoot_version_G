@@ -21,5 +21,16 @@ module CoopCore::Feature
     def for(account:, user: nil, branch: nil)
       ::CoopCore::Feature::Resolver.new(account: account, user: user, branch: branch)
     end
+
+    # The one sanctioned write path for a cooperative's own account-scope
+    # override (design §12#5 -- GET/PATCH /coop/modules). Raises
+    # UnknownModuleError for an unregistered key, same fail-closed contract
+    # as #enabled?.
+    def set_account_override(module_key, account:, enabled:, updated_by: nil)
+      definition = ::CoopCore::Feature::Registry.find(module_key)
+      setting = ::CoopCore::ModuleSetting.find_or_initialize_by(account_id: account.id, module_key: definition.key, scope_type: 'account')
+      setting.update!(enabled: enabled, updated_by_id: updated_by&.id)
+      setting
+    end
   end
 end

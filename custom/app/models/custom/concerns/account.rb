@@ -17,5 +17,8 @@ module Custom::Concerns::Account
     # throughout this file -- see app/models/account.rb).
     has_one :coop_cooperative_profile, class_name: 'CoopCore::CooperativeProfile', dependent: :destroy_async
     has_many :coop_branches, class_name: 'CoopCore::Branch', dependent: :destroy_async
+
+    # coop_core_module_settings lands in S3, alongside the tables above.
+    has_many :coop_module_settings, class_name: 'CoopCore::ModuleSetting', dependent: :destroy_async
   end
 end
