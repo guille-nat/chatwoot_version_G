@@ -1,0 +1,15 @@
+json.id resource.id
+json.name resource.name
+json.code resource.code
+json.kind resource.kind
+json.address_line resource.address_line
+json.city resource.city
+json.province resource.province
+json.postal_code resource.postal_code
+json.latitude resource.latitude
+json.longitude resource.longitude
+json.timezone resource.timezone
+json.active resource.active
+json.settings resource.settings
+json.created_at resource.created_at.to_i
+json.updated_at resource.updated_at.to_i
