@@ -68,15 +68,8 @@ RSpec.describe 'CoopCore invariants' do
     expect(offenders).to be_empty
   end
 
-  it 'keeps ModuleSetting/ModuleDefault references inside coop_core/feature/' do
-    offending_files = Dir[Rails.root.join('custom/{app,lib}/**/*.rb')].select do |path|
-      next false if path.include?('/coop_core/feature/')
-
-      File.read(path).match?(/\bModuleSetting\b|\bModuleDefault\b/)
-    end
-
-    expect(offending_files).to be_empty
-  end
+  # The ModuleSetting/ModuleDefault reference-boundary lint moved to
+  # spec/custom/feature_flag_boundary_spec.rb once CoopCore::Feature landed (S3).
 
   it 'requires every Coop::BaseController subclass to declare coop_module and coop_resource_class' do
     offenders = Api::V1::Accounts::Coop::BaseController.descendants.reject do |controller_class|

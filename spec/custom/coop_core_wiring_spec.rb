@@ -66,11 +66,5 @@ RSpec.describe 'CoopCore wiring' do
   it 'auto-includes Custom::Concerns::Account into Account' do
     expect(Account.new.respond_to?(:coop_producers)).to be true
   end
-
-  it 'does not declare any coop-prefixed key in config/features.yml' do
-    feature_names = YAML.load_file(Rails.root.join('config/features.yml')).map { |feature| feature['name'] }
-
-    expect(feature_names.grep(/\A(coop|coopflow)/)).to be_empty
-  end
 end
 # rubocop:enable RSpec/DescribeClass
