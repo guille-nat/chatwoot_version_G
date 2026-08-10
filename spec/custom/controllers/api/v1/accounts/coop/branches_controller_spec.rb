@@ -38,6 +38,16 @@ RSpec.describe 'Coop Branches API', type: :request do
         names = response.parsed_body['payload'].pluck('name')
         expect(names).not_to include('Other Account Branch')
       end
+
+      it 'lists branches even when a spurious id query param is present' do
+        get "/api/v1/accounts/#{account.id}/coop/branches",
+            params: { id: 999_999 },
+            headers: admin.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(response.parsed_body['payload'].pluck('id')).to eq([branch.id])
+      end
     end
 
     context 'when it is a regular agent' do
@@ -119,7 +129,7 @@ RSpec.describe 'Coop Branches API', type: :request do
 
     it 'returns not found when updating a branch from another account' do
       other_account = create(:account)
-      other_branch = create(:coop_core_branch, account: other_account)
+      other_branch = create(:coop_core_branch, account: other_account, name: 'Other Account Branch')
 
       patch "/api/v1/accounts/#{account.id}/coop/branches/#{other_branch.id}",
             params: { branch: { name: 'Hijack Attempt' } },
@@ -127,6 +137,7 @@ RSpec.describe 'Coop Branches API', type: :request do
             as: :json
 
       expect(response).to have_http_status(:not_found)
+      expect(other_branch.reload.name).to eq('Other Account Branch')
     end
   end
 
@@ -147,9 +158,11 @@ RSpec.describe 'Coop Branches API', type: :request do
       other_account = create(:account)
       other_branch = create(:coop_core_branch, account: other_account)
 
-      delete "/api/v1/accounts/#{account.id}/coop/branches/#{other_branch.id}",
-             headers: admin.create_new_auth_token,
-             as: :json
+      expect do
+        delete "/api/v1/accounts/#{account.id}/coop/branches/#{other_branch.id}",
+               headers: admin.create_new_auth_token,
+               as: :json
+      end.not_to change(CoopCore::Branch, :count)
 
       expect(response).to have_http_status(:not_found)
     end
