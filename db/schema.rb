@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_06_11_184600) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_10_120100) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -729,6 +729,40 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_11_184600) do
     t.index ["waiting_since"], name: "index_conversations_on_waiting_since"
   end
 
+  create_table "coop_core_branches", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "name", null: false
+    t.string "code"
+    t.string "kind", default: "branch", null: false
+    t.string "address_line"
+    t.string "city"
+    t.string "province"
+    t.string "postal_code"
+    t.decimal "latitude", precision: 10, scale: 6
+    t.decimal "longitude", precision: 10, scale: 6
+    t.string "timezone", default: "America/Argentina/Buenos_Aires", null: false
+    t.boolean "active", default: true, null: false
+    t.jsonb "settings", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "account_id, lower((code)::text)", name: "index_coop_core_branches_on_account_id_and_lower_code", unique: true, where: "(code IS NOT NULL)"
+    t.index ["account_id", "active"], name: "index_coop_core_branches_on_account_id_and_active"
+  end
+
+  create_table "coop_core_cooperative_profiles", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "legal_name"
+    t.string "cuit", limit: 11
+    t.string "locale", default: "es-AR", null: false
+    t.string "timezone", default: "America/Argentina/Buenos_Aires", null: false
+    t.string "currency", default: "ARS", null: false
+    t.jsonb "branding", default: {}, null: false
+    t.jsonb "settings", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_coop_core_cooperative_profiles_on_account_id", unique: true
+  end
+
   create_table "copilot_messages", force: :cascade do |t|
     t.bigint "copilot_thread_id", null: false
     t.bigint "account_id", null: false
@@ -1345,6 +1379,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_06_11_184600) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "coop_core_branches", "accounts"
+  add_foreign_key "coop_core_cooperative_profiles", "accounts"
   add_foreign_key "inboxes", "portals"
   add_foreign_key "user_sessions", "users"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).

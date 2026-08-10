@@ -11,5 +11,11 @@ module Custom::Concerns::Account
     # rubocop:disable Rails/HasManyOrHasOneDependent
     has_many :coop_producers, class_name: 'CoopCore::Producer'
     # rubocop:enable Rails/HasManyOrHasOneDependent
+
+    # coop_core_cooperative_profiles and coop_core_branches land in S2, so
+    # :destroy_async is safe here (matches the has_many convention used
+    # throughout this file -- see app/models/account.rb).
+    has_one :coop_cooperative_profile, class_name: 'CoopCore::CooperativeProfile', dependent: :destroy_async
+    has_many :coop_branches, class_name: 'CoopCore::Branch', dependent: :destroy_async
   end
 end
