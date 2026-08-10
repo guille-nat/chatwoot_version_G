@@ -1,0 +1,4 @@
+es:
+  coop_core:
+    errors:
+      module_disabled: 'Este módulo no está habilitado para tu cooperativa.'

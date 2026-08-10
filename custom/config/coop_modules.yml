@@ -1,0 +1,70 @@
+# CoopFlow module registry (design §5.1). This is the code-declared catalogue
+# of licensable modules; per-scope enable/disable state lives in the DB
+# (coop_core_module_defaults / coop_core_module_settings, landing in S3).
+#
+# key:             stable identifier, used everywhere (CoopCore::Feature.enabled?(:key))
+# name:            es-AR display name
+# description:     es-AR short description
+# default_enabled: code-level fallback (tier 7, lowest precedence)
+# licensable:      whether the module can be sold as a standalone add-on
+# depends_on:      module keys that must also resolve true, applied after tier resolution
+- key: producers
+  name: Productores
+  description: Padrón de productores, campos, lotes y cultivos
+  default_enabled: true
+  licensable: false
+  depends_on: []
+- key: requests
+  name: Solicitudes
+  description: Gestión de solicitudes operativas (cupos, transporte, compra, venta)
+  default_enabled: false
+  licensable: true
+  depends_on: [producers]
+- key: market
+  name: Mercado
+  description: Precios de granos, alertas y cierre de posiciones
+  default_enabled: false
+  licensable: true
+  depends_on: []
+- key: weather
+  name: Clima
+  description: Pronóstico, alertas agroclimáticas y ventanas de trabajo
+  default_enabled: false
+  licensable: true
+  depends_on: []
+- key: agronomy
+  name: Agronomía
+  description: Visitas, recorridas y recomendaciones agronómicas
+  default_enabled: false
+  licensable: true
+  depends_on: [producers]
+- key: documents
+  name: Documentos
+  description: OCR y gestión documental (facturas, liquidaciones, contratos)
+  default_enabled: false
+  licensable: true
+  depends_on: []
+- key: transport
+  name: Transporte
+  description: Órdenes de transporte y seguimiento logístico
+  default_enabled: false
+  licensable: true
+  depends_on: [producers]
+- key: analytics
+  name: Analítica
+  description: Reportes y tableros de indicadores para la cooperativa
+  default_enabled: false
+  licensable: true
+  depends_on: []
+- key: automation
+  name: Automatizaciones
+  description: Reglas y recordatorios automáticos configurables
+  default_enabled: false
+  licensable: true
+  depends_on: []
+- key: ai
+  name: Inteligencia Artificial
+  description: Asistencia por IA (fuera de alcance de F1 -- declarado, sin código)
+  default_enabled: false
+  licensable: true
+  depends_on: []

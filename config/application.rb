@@ -33,6 +33,11 @@ if ENV.fetch('JUDOSCALE_URL', false).present?
   require 'judoscale-sidekiq'
 end
 
+# Needed eagerly (before Zeitwerk is set up) to gate the CoopFlow overlay
+# block below -- ChatwootApp otherwise only becomes autoloadable once the
+# app's `lib` eager load path is registered with the framework.
+require_relative '../lib/chatwoot_app'
+
 module Chatwoot
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
@@ -51,6 +56,20 @@ module Chatwoot
     # Load enterprise initializers alongside standard initializers
     enterprise_initializers = Rails.root.join('enterprise/config/initializers')
     Dir[enterprise_initializers.join('**/*.rb')].each { |f| require f } if enterprise_initializers.exist?
+
+    # CoopFlow (Coop Core) extension overlay -- see custom/README.md before merging upstream
+    if ChatwootApp.custom?
+      config.eager_load_paths << Rails.root.join('custom/lib')
+      # rubocop:disable Rails/FilePath
+      config.eager_load_paths += Dir["#{Rails.root}/custom/app/**"]
+      # rubocop:enable Rails/FilePath
+      config.paths['app/views'].unshift('custom/app/views')
+      config.paths['config/routes.rb'] << 'custom/config/routes.rb'
+      config.i18n.load_path += Dir[Rails.root.join('custom/config/locales/**/*.yml')]
+
+      custom_initializers = Rails.root.join('custom/config/initializers')
+      Dir[custom_initializers.join('**/*.rb')].each { |f| require f } if custom_initializers.exist?
+    end
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration can go into files in config/initializers
