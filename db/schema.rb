@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_10_120100) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_10_130100) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -763,6 +763,31 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_10_120100) do
     t.index ["account_id"], name: "index_coop_core_cooperative_profiles_on_account_id", unique: true
   end
 
+  create_table "coop_core_module_defaults", force: :cascade do |t|
+    t.string "module_key", null: false
+    t.boolean "enabled", default: false, null: false
+    t.integer "updated_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["module_key"], name: "index_coop_core_module_defaults_on_module_key", unique: true
+  end
+
+  create_table "coop_core_module_settings", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "module_key", null: false
+    t.string "scope_type", null: false
+    t.bigint "scope_id"
+    t.string "scope_key"
+    t.boolean "enabled", default: false, null: false
+    t.integer "updated_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "module_key", "scope_key"], name: "index_coop_core_module_settings_on_scope_key", unique: true, where: "(scope_key IS NOT NULL)"
+    t.index ["account_id", "module_key", "scope_type", "scope_id"], name: "index_coop_core_module_settings_on_scope_id", unique: true, where: "(scope_id IS NOT NULL)"
+    t.index ["account_id", "module_key"], name: "index_coop_core_module_settings_on_account_scope", unique: true, where: "((scope_type)::text = 'account'::text)"
+    t.index ["account_id"], name: "index_coop_core_module_settings_on_account_id"
+  end
+
   create_table "copilot_messages", force: :cascade do |t|
     t.bigint "copilot_thread_id", null: false
     t.bigint "account_id", null: false
@@ -1381,6 +1406,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_10_120100) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "coop_core_branches", "accounts"
   add_foreign_key "coop_core_cooperative_profiles", "accounts"
+  add_foreign_key "coop_core_module_defaults", "users", column: "updated_by_id"
+  add_foreign_key "coop_core_module_settings", "accounts"
+  add_foreign_key "coop_core_module_settings", "users", column: "updated_by_id"
   add_foreign_key "inboxes", "portals"
   add_foreign_key "user_sessions", "users"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
