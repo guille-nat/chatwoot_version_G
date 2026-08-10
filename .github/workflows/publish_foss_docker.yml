@@ -47,6 +47,8 @@ jobs:
         run: |
           rm -rf enterprise
           rm -rf spec/enterprise
+          rm -rf custom
+          rm -rf spec/custom
 
       - name: Set Chatwoot edition
         run: |

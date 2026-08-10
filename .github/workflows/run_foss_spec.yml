@@ -104,6 +104,8 @@ jobs:
         run: |
           rm -rf enterprise
           rm -rf spec/enterprise
+          rm -rf custom
+          rm -rf spec/custom
 
       - name: Create database
         run: bundle exec rake db:create
@@ -144,3 +146,70 @@ jobs:
         with:
           name: rails-log-folder-${{ matrix.ci_node_index }}
           path: log
+
+  # ADR-009: creating custom/ makes ChatwootApp.extensions return
+  # %w[enterprise custom] even when DISABLE_ENTERPRISE is set. This is
+  # intentional (see custom/README.md), but it's the kind of thing an
+  # upstream change to lib/chatwoot_app.rb could silently break. Runs as its
+  # own process (not inside the parallelized backend-tests matrix) against
+  # the full, unstripped repo -- the whole point is proving the documented
+  # behavior with both enterprise/ and custom/ present.
+  disable-enterprise-boot-check:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ''
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --mount type=tmpfs,destination=/var/lib/postgresql/data
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: --entrypoint redis-server
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+
+      - name: Install pnpm dependencies
+        run: pnpm i
+
+      - name: Create database
+        run: bundle exec rake db:create
+
+      - name: Seed database
+        run: bundle exec rake db:schema:load
+
+      - name: Assert ChatwootApp.custom? under DISABLE_ENTERPRISE
+        run: bundle exec rails runner 'raise "custom? must stay true under DISABLE_ENTERPRISE -- see custom/README.md ADR-009" unless ChatwootApp.custom?'
+        env:
+          DISABLE_ENTERPRISE: true
+
+      - name: Run CoopCore wiring smoke spec under DISABLE_ENTERPRISE
+        run: bundle exec rspec spec/custom/coop_core_wiring_spec.rb
+        env:
+          DISABLE_ENTERPRISE: true

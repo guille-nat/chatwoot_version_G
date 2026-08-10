@@ -284,6 +284,12 @@ jobs:
           name: Run DB migrations
           command: bundle exec rails db:chatwoot_prepare
 
+      # Catches Zeitwerk namespace mistakes (e.g. in custom/) that a dev-mode
+      # lazy-load test suite would miss -- production mode eager loads everything.
+      - run:
+          name: Zeitwerk check (production eager load)
+          command: RAILS_ENV=production bin/rails zeitwerk:check
+
       # Run backend tests (parallelized)
       - run:
           name: Run backend tests
