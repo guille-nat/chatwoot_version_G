@@ -1,0 +1,16 @@
+json.id resource.id
+json.business_name resource.business_name
+json.trade_name resource.trade_name
+json.producer_type resource.producer_type
+json.cuit resource.cuit
+json.cuit_formatted resource.cuit_formatted
+json.primary_phone resource.primary_phone
+json.email resource.email
+json.status resource.status
+json.branch_id resource.branch_id
+json.contact_id resource.contact_id
+json.external_ref resource.external_ref
+json.custom_attributes resource.custom_attributes
+json.notes resource.notes
+json.created_at resource.created_at.to_i
+json.updated_at resource.updated_at.to_i
