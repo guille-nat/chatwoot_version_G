@@ -3,6 +3,15 @@
 class CoopCore::Branch < CoopCore::ApplicationRecord
   include CoopCore::AccountScoped
 
+  # Deleting a branch must unassign its producers, never block or
+  # cascade-delete them (design decision, S4a review). dependent: :nullify
+  # unassigns via a bulk UPDATE, not per-record saves -- it will NOT go
+  # through Producer callbacks or leave an `audited` trail for the
+  # unassignment. The DB-level FK (migration 20260811090000) carries
+  # on_delete: :nullify as the backstop so no path (this association,
+  # console, raw SQL) can ever block or bypass the unassignment.
+  has_many :producers, class_name: 'CoopCore::Producer', dependent: :nullify
+
   KINDS = %w[branch plant silo office].freeze
 
   validates :name, presence: true

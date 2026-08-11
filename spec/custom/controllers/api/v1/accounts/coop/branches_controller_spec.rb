@@ -166,5 +166,34 @@ RSpec.describe 'Coop Branches API', type: :request do
 
       expect(response).to have_http_status(:not_found)
     end
+
+    context 'when the branch has an assigned producer' do
+      let(:branch) { create(:coop_core_branch, account: account) }
+      let!(:producer) { create(:coop_core_producer, account: account, branch: branch) }
+
+      it 'succeeds instead of blocking on the foreign key' do
+        delete "/api/v1/accounts/#{account.id}/coop/branches/#{branch.id}",
+               headers: admin.create_new_auth_token,
+               as: :json
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'does not delete the assigned producer' do
+        delete "/api/v1/accounts/#{account.id}/coop/branches/#{branch.id}",
+               headers: admin.create_new_auth_token,
+               as: :json
+
+        expect(CoopCore::Producer.exists?(producer.id)).to be true
+      end
+
+      it 'unassigns the producer branch' do
+        delete "/api/v1/accounts/#{account.id}/coop/branches/#{branch.id}",
+               headers: admin.create_new_auth_token,
+               as: :json
+
+        expect(producer.reload.branch_id).to be_nil
+      end
+    end
   end
 end

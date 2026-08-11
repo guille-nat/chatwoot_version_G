@@ -19,6 +19,7 @@ class CoopCore::Producer < CoopCore::ApplicationRecord
   validate :cuit_must_be_valid
 
   before_validation :normalize_cuit
+  before_validation :normalize_external_ref
   before_validation :prepare_jsonb_attributes
 
   def cuit_formatted
@@ -31,6 +32,12 @@ class CoopCore::Producer < CoopCore::ApplicationRecord
 
   def normalize_cuit
     self.cuit = cuit.present? ? Cuit.normalize(cuit) : nil
+  end
+
+  # Without this, '' is a real value to the partial unique index (it only
+  # excludes NULL), so two producers could both save with external_ref: ''.
+  def normalize_external_ref
+    self.external_ref = nil if external_ref.blank?
   end
 
   def cuit_must_be_valid

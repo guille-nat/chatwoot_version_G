@@ -29,7 +29,12 @@ class CreateCoopCoreProducers < ActiveRecord::Migration[7.1]
 
   def add_producer_foreign_keys
     add_foreign_key :coop_core_producers, :accounts, column: :account_id
-    add_foreign_key :coop_core_producers, :coop_core_branches, column: :branch_id
+    # on_delete: :nullify is the DB-level backstop for CoopCore::Branch's
+    # `has_many :producers, dependent: :nullify` -- deleting a branch must
+    # unassign its producers, never block or cascade-delete them, and no
+    # code path (app-level or raw SQL) can bypass that once the FK enforces
+    # it too.
+    add_foreign_key :coop_core_producers, :coop_core_branches, column: :branch_id, on_delete: :nullify
 
     # contacts is the hottest, largest table in this app -- validate: false
     # defers lock acquisition to a separate migration (design §4.1 / the
@@ -42,7 +47,7 @@ class CreateCoopCoreProducers < ActiveRecord::Migration[7.1]
     add_index :coop_core_producers, %i[account_id status]
     add_index :coop_core_producers, %i[account_id primary_phone]
     add_index :coop_core_producers, :branch_id
-    add_index :coop_core_producers, 'account_id, cuit',
+    add_index :coop_core_producers, %i[account_id cuit],
               unique: true,
               where: 'cuit IS NOT NULL',
               name: 'index_coop_core_producers_on_account_id_and_cuit'

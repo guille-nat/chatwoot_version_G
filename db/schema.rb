@@ -1435,7 +1435,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_11_090100) do
   add_foreign_key "coop_core_module_settings", "users", column: "updated_by_id"
   add_foreign_key "coop_core_producers", "accounts"
   add_foreign_key "coop_core_producers", "contacts", on_delete: :nullify
-  add_foreign_key "coop_core_producers", "coop_core_branches", column: "branch_id"
+  add_foreign_key "coop_core_producers", "coop_core_branches", column: "branch_id", on_delete: :nullify
   add_foreign_key "inboxes", "portals"
   add_foreign_key "user_sessions", "users"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).

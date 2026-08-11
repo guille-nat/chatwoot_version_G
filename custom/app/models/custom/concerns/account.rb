@@ -4,18 +4,24 @@ module Custom::Concerns::Account
   extend ActiveSupport::Concern
 
   included do
-    # coop_core_producers now exists (S4a) -- :destroy_async matches the
-    # cascade convention already proven safe for coop_cooperative_profile /
-    # coop_branches below (re-verified against spec/models/account_spec.rb).
-    has_many :coop_producers, class_name: 'CoopCore::Producer', dependent: :destroy_async
-
-    # coop_core_cooperative_profiles and coop_core_branches land in S2, so
-    # :destroy_async is safe here (matches the has_many convention used
-    # throughout this file -- see app/models/account.rb).
-    has_one :coop_cooperative_profile, class_name: 'CoopCore::CooperativeProfile', dependent: :destroy_async
-    has_many :coop_branches, class_name: 'CoopCore::Branch', dependent: :destroy_async
-
-    # coop_core_module_settings lands in S3, alongside the tables above.
-    has_many :coop_module_settings, class_name: 'CoopCore::ModuleSetting', dependent: :destroy_async
+    # coop_core_producers/branches/cooperative_profiles/module_settings all
+    # carry a real, non-deferrable DB foreign key to accounts (db/schema.rb).
+    # Those FKs are enforced inside the same transaction as
+    # `DELETE FROM accounts`, but :destroy_async enqueues the child destroy
+    # job for AFTER commit -- too late to satisfy the FK, so it raises
+    # ActiveRecord::InvalidForeignKey and blocks account destruction the
+    # moment any of these tables has a row (verified against
+    # activerecord-7.1.5.2; the :destroy_async precedent this file used to
+    # claim from other has_many associations doesn't hold here because none
+    # of Chatwoot's native associations have a DB FK to accounts). Children
+    # must be destroyed synchronously, and producers before branches --
+    # coop_core_producers.branch_id also FKs to coop_core_branches, so a
+    # producer row would otherwise block branch deletion (the branch_id FK
+    # is on_delete: :nullify as a backstop, but destroy order shouldn't
+    # depend on it).
+    has_many :coop_producers, class_name: 'CoopCore::Producer', dependent: :destroy
+    has_one :coop_cooperative_profile, class_name: 'CoopCore::CooperativeProfile', dependent: :destroy
+    has_many :coop_branches, class_name: 'CoopCore::Branch', dependent: :destroy
+    has_many :coop_module_settings, class_name: 'CoopCore::ModuleSetting', dependent: :destroy
   end
 end

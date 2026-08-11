@@ -23,9 +23,22 @@ RSpec.describe CoopCore::Producer::Cuit do
 
     context 'with a correct check digit but an unknown type prefix' do
       it 'returns false' do
-        # base digits 9912345678 -> mod-11 check digit is 3, isolating the
-        # prefix failure from the check-digit failure.
-        expect(described_class.valid?('99-12345678-3')).to be false
+        # base digits 9912345678 -> sum 219, remainder 219 % 11 = 10,
+        # check digit = 11 - 10 = 1. The check digit is correct, isolating
+        # the prefix failure from the check-digit failure.
+        expect(described_class.valid?('99-12345678-1')).to be false
+      end
+    end
+
+    context 'with base digits whose weighted sum has remainder 1 (no valid check digit exists)' do
+      it 'returns false for every possible trailing digit' do
+        # base digits 2001000000 -> weighted sum 12, remainder 12 % 11 = 1,
+        # which maps to no valid check digit (Domain 3: remainder 1 has no
+        # solution). Every trailing digit must therefore be rejected.
+        aggregate_failures do
+          expect(described_class.valid?('20-01000000-0')).to be false
+          expect(described_class.valid?('20-01000000-1')).to be false
+        end
       end
     end
 

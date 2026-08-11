@@ -76,6 +76,15 @@ RSpec.describe CoopCore::Producer, type: :model do
         expect(duplicate).not_to be_valid
       end
     end
+
+    context 'with a blank external_ref on two producers in the same account' do
+      it 'is valid for both' do
+        create(:coop_core_producer, account: account, external_ref: '')
+        second = build(:coop_core_producer, account: account, external_ref: '')
+
+        expect(second).to be_valid
+      end
+    end
   end
 
   describe 'normalization' do
@@ -83,6 +92,12 @@ RSpec.describe CoopCore::Producer, type: :model do
       producer = create(:coop_core_producer, account: account, cuit: '20-12345678-6')
 
       expect(producer.cuit).to eq('20123456786')
+    end
+
+    it 'stores a blank external_ref as nil' do
+      producer = create(:coop_core_producer, account: account, external_ref: '')
+
+      expect(producer.external_ref).to be_nil
     end
   end
 
