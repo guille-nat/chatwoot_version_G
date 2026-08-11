@@ -1,4 +1,45 @@
-# Minimal S1 stub: proves CoopCore.table_name_prefix is wired end to end.
-# The coop_core_producers table and the full model land in S4a.
+# A cooperative's producer (productor asociado) -- design §4/Domain 3.
+# Contact linking (auto-match by phone/CUIT via CoopCore::Producer::ContactLinkable)
+# lands in S5; today `contact_id` is a plain, optional FK with no matching
+# logic and is not writable through the API (see ProducersController).
 class CoopCore::Producer < CoopCore::ApplicationRecord
+  include CoopCore::AccountScoped
+
+  PRODUCER_TYPES = %w[individual company].freeze
+  STATUSES = %w[active inactive].freeze
+
+  belongs_to :branch, class_name: 'CoopCore::Branch', optional: true
+  belongs_to :contact, optional: true
+
+  validates :business_name, presence: true
+  validates :producer_type, presence: true, inclusion: { in: PRODUCER_TYPES }
+  validates :status, presence: true, inclusion: { in: STATUSES }
+  validates :cuit, uniqueness: { scope: :account_id }, allow_nil: true
+  validates :external_ref, uniqueness: { scope: :account_id }, allow_nil: true
+  validate :cuit_must_be_valid
+
+  before_validation :normalize_cuit
+  before_validation :prepare_jsonb_attributes
+
+  def cuit_formatted
+    return nil if cuit.blank?
+
+    Cuit.format(cuit)
+  end
+
+  private
+
+  def normalize_cuit
+    self.cuit = cuit.present? ? Cuit.normalize(cuit) : nil
+  end
+
+  def cuit_must_be_valid
+    return if cuit.blank?
+
+    errors.add(:cuit, :invalid) unless Cuit.valid?(cuit)
+  end
+
+  def prepare_jsonb_attributes
+    self.custom_attributes = {} unless custom_attributes.is_a?(Hash)
+  end
 end

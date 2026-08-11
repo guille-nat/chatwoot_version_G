@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_10_130100) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_11_090100) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -788,6 +788,30 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_10_130100) do
     t.index ["account_id"], name: "index_coop_core_module_settings_on_account_id"
   end
 
+  create_table "coop_core_producers", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.bigint "branch_id"
+    t.integer "contact_id"
+    t.string "cuit", limit: 11
+    t.string "business_name", null: false
+    t.string "trade_name"
+    t.string "producer_type", default: "individual", null: false
+    t.string "primary_phone"
+    t.string "email"
+    t.string "status", default: "active", null: false
+    t.string "external_ref"
+    t.jsonb "custom_attributes", default: {}, null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "contact_id"], name: "index_coop_core_producers_on_account_id_and_contact_id", unique: true, where: "(contact_id IS NOT NULL)"
+    t.index ["account_id", "cuit"], name: "index_coop_core_producers_on_account_id_and_cuit", unique: true, where: "(cuit IS NOT NULL)"
+    t.index ["account_id", "external_ref"], name: "index_coop_core_producers_on_account_id_and_external_ref", unique: true, where: "(external_ref IS NOT NULL)"
+    t.index ["account_id", "primary_phone"], name: "index_coop_core_producers_on_account_id_and_primary_phone"
+    t.index ["account_id", "status"], name: "index_coop_core_producers_on_account_id_and_status"
+    t.index ["branch_id"], name: "index_coop_core_producers_on_branch_id"
+  end
+
   create_table "copilot_messages", force: :cascade do |t|
     t.bigint "copilot_thread_id", null: false
     t.bigint "account_id", null: false
@@ -1409,6 +1433,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_10_130100) do
   add_foreign_key "coop_core_module_defaults", "users", column: "updated_by_id"
   add_foreign_key "coop_core_module_settings", "accounts"
   add_foreign_key "coop_core_module_settings", "users", column: "updated_by_id"
+  add_foreign_key "coop_core_producers", "accounts"
+  add_foreign_key "coop_core_producers", "contacts", on_delete: :nullify
+  add_foreign_key "coop_core_producers", "coop_core_branches", column: "branch_id"
   add_foreign_key "inboxes", "portals"
   add_foreign_key "user_sessions", "users"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).

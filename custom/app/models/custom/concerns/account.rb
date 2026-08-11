@@ -4,13 +4,10 @@ module Custom::Concerns::Account
   extend ActiveSupport::Concern
 
   included do
-    # No :dependent option yet -- coop_core_producers doesn't exist until S4a's
-    # migration lands (CoopCore::Producer is a table-less S1 stub). Adding
-    # :destroy/:destroy_async now would make every Account#destroy touch a
-    # table that doesn't exist. Revisit the cascade behavior when S4a ships.
-    # rubocop:disable Rails/HasManyOrHasOneDependent
-    has_many :coop_producers, class_name: 'CoopCore::Producer'
-    # rubocop:enable Rails/HasManyOrHasOneDependent
+    # coop_core_producers now exists (S4a) -- :destroy_async matches the
+    # cascade convention already proven safe for coop_cooperative_profile /
+    # coop_branches below (re-verified against spec/models/account_spec.rb).
+    has_many :coop_producers, class_name: 'CoopCore::Producer', dependent: :destroy_async
 
     # coop_core_cooperative_profiles and coop_core_branches land in S2, so
     # :destroy_async is safe here (matches the has_many convention used
