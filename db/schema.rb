@@ -782,8 +782,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_10_130100) do
     t.integer "updated_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["account_id", "module_key", "scope_key"], name: "index_coop_core_module_settings_on_scope_key", unique: true, where: "(scope_key IS NOT NULL)"
     t.index ["account_id", "module_key", "scope_type", "scope_id"], name: "index_coop_core_module_settings_on_scope_id", unique: true, where: "(scope_id IS NOT NULL)"
+    t.index ["account_id", "module_key", "scope_type", "scope_key"], name: "index_coop_core_module_settings_on_scope_key", unique: true, where: "(scope_key IS NOT NULL)"
     t.index ["account_id", "module_key"], name: "index_coop_core_module_settings_on_account_scope", unique: true, where: "((scope_type)::text = 'account'::text)"
     t.index ["account_id"], name: "index_coop_core_module_settings_on_account_id"
   end

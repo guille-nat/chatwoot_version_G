@@ -28,9 +28,20 @@ module CoopCore::Feature
     # as #enabled?.
     def set_account_override(module_key, account:, enabled:, updated_by: nil)
       definition = ::CoopCore::Feature::Registry.find(module_key)
-      setting = ::CoopCore::ModuleSetting.find_or_initialize_by(account_id: account.id, module_key: definition.key, scope_type: 'account')
-      setting.update!(enabled: enabled, updated_by_id: updated_by&.id)
-      setting
+      retried = false
+      begin
+        setting = ::CoopCore::ModuleSetting.find_or_initialize_by(account_id: account.id, module_key: definition.key, scope_type: 'account')
+        setting.update!(enabled: enabled, updated_by_id: updated_by&.id)
+        setting
+      rescue ActiveRecord::RecordNotUnique
+        # Two concurrent calls can both miss the find above and both attempt
+        # an INSERT; the loser hits the partial unique index. Retry once --
+        # the row now exists, so the retry takes the update path.
+        raise if retried
+
+        retried = true
+        retry
+      end
     end
   end
 end

@@ -36,7 +36,7 @@ class CreateCoopCoreModuleSettings < ActiveRecord::Migration[7.1]
               unique: true,
               where: 'scope_id IS NOT NULL',
               name: 'index_coop_core_module_settings_on_scope_id'
-    add_index :coop_core_module_settings, %i[account_id module_key scope_key],
+    add_index :coop_core_module_settings, %i[account_id module_key scope_type scope_key],
               unique: true,
               where: 'scope_key IS NOT NULL',
               name: 'index_coop_core_module_settings_on_scope_key'

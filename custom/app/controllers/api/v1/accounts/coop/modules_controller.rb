@@ -31,6 +31,13 @@ class Api::V1::Accounts::Coop::ModulesController < Api::V1::Accounts::Coop::Base
   # module's account-scope setting is a find-or-create keyed on (account,
   # module_key), not a member resource -- so this overrides the base
   # controller's id-based member/collection split entirely.
+  #
+  # Constraint: this always authorizes the class, never an instance. That is
+  # safe for index/update today, but a future member action (e.g. show) that
+  # relies on this override would hit CoopCore::BasePolicy#show? with a Class
+  # as `record`, and `record.id` would raise NoMethodError. Any such action
+  # must resolve and pass a real ModuleSetting instance instead of relying on
+  # this method.
   def authorize_coop_resource
     authorize(coop_resource_class)
   end
