@@ -2,3 +2,6 @@ es:
   coop_core:
     errors:
       module_disabled: 'Este módulo no está habilitado para tu cooperativa.'
+      producer_already_linked: 'El productor ya está vinculado a otro contacto.'
+      contact_already_linked: 'El contacto ya está vinculado a otro productor.'
+      producer_not_linked: 'La conversación no tiene un productor vinculado.'
