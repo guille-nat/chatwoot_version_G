@@ -1,0 +1,13 @@
+json.id resource.id
+json.producer_id resource.producer_id
+json.branch_id resource.branch_id
+json.name resource.name
+json.total_hectares resource.total_hectares
+json.province resource.province
+json.locality resource.locality
+json.latitude resource.latitude
+json.longitude resource.longitude
+json.external_ref resource.external_ref
+json.custom_attributes resource.custom_attributes
+json.created_at resource.created_at.to_i
+json.updated_at resource.updated_at.to_i

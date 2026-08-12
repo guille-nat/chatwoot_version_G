@@ -1,0 +1,12 @@
+json.id resource.id
+json.plot_id resource.plot_id
+json.species resource.species
+json.variety resource.variety
+json.campaign resource.campaign
+json.sowing_date resource.sowing_date
+json.harvest_date resource.harvest_date
+json.hectares resource.hectares
+json.expected_yield_kg_per_ha resource.expected_yield_kg_per_ha
+json.status resource.status
+json.created_at resource.created_at.to_i
+json.updated_at resource.updated_at.to_i
