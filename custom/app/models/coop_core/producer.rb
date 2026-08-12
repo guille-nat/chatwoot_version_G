@@ -1,9 +1,12 @@
 # A cooperative's producer (productor asociado) -- design §4/Domain 3.
-# Contact linking (auto-match by phone/CUIT via CoopCore::Producer::ContactLinkable)
-# lands in S5; today `contact_id` is a plain, optional FK with no matching
-# logic and is not writable through the API (see ProducersController).
+# Contact linking (auto-match by phone/CUIT, S5) lives in ContactLinkable;
+# `contact_id` is still not writable through producer create/update -- see
+# ProducersController -- it's only ever set via ContactLinkable's
+# link_contact/unlink_contact (manual, ContactLinksController) or
+# auto_link_contact (automatic, CoopCore::LinkProducerJob).
 class CoopCore::Producer < CoopCore::ApplicationRecord
   include CoopCore::AccountScoped
+  include ContactLinkable
 
   PRODUCER_TYPES = %w[individual company].freeze
   STATUSES = %w[active inactive].freeze
