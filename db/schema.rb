@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_11_090100) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_12_100200) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -763,6 +763,42 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_11_090100) do
     t.index ["account_id"], name: "index_coop_core_cooperative_profiles_on_account_id", unique: true
   end
 
+  create_table "coop_core_crops", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.bigint "plot_id", null: false
+    t.string "species", null: false
+    t.string "variety"
+    t.string "campaign", null: false
+    t.date "sowing_date"
+    t.date "harvest_date"
+    t.decimal "hectares", precision: 12, scale: 2
+    t.decimal "expected_yield_kg_per_ha", precision: 12, scale: 2
+    t.string "status", default: "planned", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "campaign"], name: "index_coop_core_crops_on_account_id_and_campaign"
+    t.index ["account_id", "species"], name: "index_coop_core_crops_on_account_id_and_species"
+    t.index ["plot_id", "campaign"], name: "index_coop_core_crops_on_plot_id_and_campaign"
+  end
+
+  create_table "coop_core_fields", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.bigint "producer_id", null: false
+    t.bigint "branch_id"
+    t.string "name", null: false
+    t.decimal "total_hectares", precision: 12, scale: 2
+    t.string "province"
+    t.string "locality"
+    t.decimal "latitude", precision: 10, scale: 6
+    t.decimal "longitude", precision: 10, scale: 6
+    t.string "external_ref"
+    t.jsonb "custom_attributes", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "producer_id, lower((name)::text)", name: "index_coop_core_fields_on_producer_id_and_lower_name", unique: true
+    t.index ["account_id", "producer_id"], name: "index_coop_core_fields_on_account_id_and_producer_id"
+  end
+
   create_table "coop_core_module_defaults", force: :cascade do |t|
     t.string "module_key", null: false
     t.boolean "enabled", default: false, null: false
@@ -786,6 +822,19 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_11_090100) do
     t.index ["account_id", "module_key", "scope_type", "scope_key"], name: "index_coop_core_module_settings_on_scope_key", unique: true, where: "(scope_key IS NOT NULL)"
     t.index ["account_id", "module_key"], name: "index_coop_core_module_settings_on_account_scope", unique: true, where: "((scope_type)::text = 'account'::text)"
     t.index ["account_id"], name: "index_coop_core_module_settings_on_account_id"
+  end
+
+  create_table "coop_core_plots", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.bigint "field_id", null: false
+    t.string "name", null: false
+    t.decimal "hectares", precision: 12, scale: 2
+    t.jsonb "geometry"
+    t.string "soil_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "field_id, lower((name)::text)", name: "index_coop_core_plots_on_field_id_and_lower_name", unique: true
+    t.index ["account_id", "field_id"], name: "index_coop_core_plots_on_account_id_and_field_id"
   end
 
   create_table "coop_core_producers", force: :cascade do |t|
@@ -1430,9 +1479,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_11_090100) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "coop_core_branches", "accounts"
   add_foreign_key "coop_core_cooperative_profiles", "accounts"
+  add_foreign_key "coop_core_crops", "accounts"
+  add_foreign_key "coop_core_crops", "coop_core_plots", column: "plot_id", on_delete: :cascade
+  add_foreign_key "coop_core_fields", "accounts"
+  add_foreign_key "coop_core_fields", "coop_core_branches", column: "branch_id", on_delete: :nullify
+  add_foreign_key "coop_core_fields", "coop_core_producers", column: "producer_id", on_delete: :cascade
   add_foreign_key "coop_core_module_defaults", "users", column: "updated_by_id"
   add_foreign_key "coop_core_module_settings", "accounts"
   add_foreign_key "coop_core_module_settings", "users", column: "updated_by_id"
+  add_foreign_key "coop_core_plots", "accounts"
+  add_foreign_key "coop_core_plots", "coop_core_fields", column: "field_id", on_delete: :cascade
   add_foreign_key "coop_core_producers", "accounts"
   add_foreign_key "coop_core_producers", "contacts", on_delete: :nullify
   add_foreign_key "coop_core_producers", "coop_core_branches", column: "branch_id", on_delete: :nullify

@@ -10,6 +10,11 @@ class CoopCore::Producer < CoopCore::ApplicationRecord
 
   belongs_to :branch, class_name: 'CoopCore::Branch', optional: true
   belongs_to :contact, optional: true
+  # ON DELETE CASCADE at the DB level (migration 20260812100000) is the
+  # backstop; dependent: :destroy runs the cascade synchronously and fires
+  # Field callbacks/audit trail -- same lesson as the S4a review-fix on
+  # Custom::Concerns::Account (see custom/app/models/custom/concerns/account.rb).
+  has_many :fields, class_name: 'CoopCore::Field', dependent: :destroy
 
   validates :business_name, presence: true
   validates :producer_type, presence: true, inclusion: { in: PRODUCER_TYPES }

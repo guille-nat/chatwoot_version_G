@@ -11,6 +11,10 @@ class CoopCore::Branch < CoopCore::ApplicationRecord
   # on_delete: :nullify as the backstop so no path (this association,
   # console, raw SQL) can ever block or bypass the unassignment.
   has_many :producers, class_name: 'CoopCore::Producer', dependent: :nullify
+  # Same rationale as #producers above: deleting a branch must unassign its
+  # fields, never block or cascade-delete them. coop_core_fields.branch_id
+  # carries the matching on_delete: :nullify DB backstop.
+  has_many :fields, class_name: 'CoopCore::Field', dependent: :nullify
 
   KINDS = %w[branch plant silo office].freeze
 
