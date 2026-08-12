@@ -50,6 +50,13 @@ class CoopCore::DeliverEventJob < ApplicationJob
     subscription = ::CoopCore::EventSubscription.active.find_by(id: subscription_id)
     return if event.blank? || subscription.blank?
 
+    if event.account_id != subscription.account_id
+      Rails.logger.warn(
+        "[CoopCore] cross-account delivery blocked event=#{event.id} subscription=#{subscription.id}"
+      )
+      return
+    end
+
     deliver(event, subscription)
   end
 

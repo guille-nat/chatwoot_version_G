@@ -36,17 +36,31 @@ class CoopCore::Event < CoopCore::ApplicationRecord
   # Producer::ContactLinkable#link_contact (S4a/S4b review-fixes): a
   # duplicate publish raising ActiveRecord::RecordNotUnique is a success
   # case (someone already published this exact event), not an error.
+  #
+  # The `create!` runs inside `transaction(requires_new: true)` (a Postgres
+  # SAVEPOINT) so `.publish` is safe to call from *inside* a caller's own
+  # open transaction, which is the common case (e.g.
+  # Producer#publish_producer_created_event runs from an after_create_commit,
+  # but other call sites publish inline). Without the SAVEPOINT, a
+  # RecordNotUnique collision aborts the entire enclosing Postgres
+  # transaction, and the rescue's `find_by` would then raise
+  # PG::InFailedSqlTransaction, rolling back every other write the caller
+  # made in that transaction. With `requires_new: true`, only the SAVEPOINT
+  # is rolled back on collision, so the rescue's `find_by` runs against a
+  # healthy transaction and the caller's other writes survive.
   def self.publish(key, account:, subject:, payload:)
     occurred_at = Time.current
     idempotency_key = "#{key}:#{subject.to_global_id}:#{occurred_at.to_i}"
 
-    create!(
-      account: account,
-      key: key.to_s,
-      payload: payload,
-      occurred_at: occurred_at,
-      idempotency_key: idempotency_key
-    )
+    transaction(requires_new: true) do
+      create!(
+        account: account,
+        key: key.to_s,
+        payload: payload,
+        occurred_at: occurred_at,
+        idempotency_key: idempotency_key
+      )
+    end
   rescue ActiveRecord::RecordNotUnique
     find_by(account_id: account.id, idempotency_key: idempotency_key)
   end

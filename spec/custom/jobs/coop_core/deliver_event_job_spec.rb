@@ -92,6 +92,25 @@ RSpec.describe CoopCore::DeliverEventJob, type: :job do
         expect { described_class.perform_now(event.id, subscription.id) }.not_to raise_error
       end
     end
+
+    context 'when the event and subscription belong to different accounts' do
+      let(:other_account) { create(:account) }
+      let(:other_subscription) { create(:coop_core_event_subscription, account: other_account, secret: 'shared-secret') }
+
+      it 'blocks delivery instead of posting the payload cross-account' do
+        expect(SafeFetch).not_to receive(:fetch)
+
+        described_class.perform_now(event.id, other_subscription.id)
+      end
+
+      it 'logs a structured warning and does not raise' do
+        expect(Rails.logger).to receive(:warn).with(
+          "[CoopCore] cross-account delivery blocked event=#{event.id} subscription=#{other_subscription.id}"
+        )
+
+        expect { described_class.perform_now(event.id, other_subscription.id) }.not_to raise_error
+      end
+    end
   end
 
   describe 'retry configuration' do

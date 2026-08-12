@@ -103,6 +103,45 @@ RSpec.describe CoopCore::Event, type: :model do
         expect(CoopCore::DeliverEventJob).not_to have_been_enqueued.with(anything, subscription.id)
       end
     end
+
+    context 'when called inside a caller-owned transaction' do
+      let!(:subscription) { create(:coop_core_event_subscription, account: account) }
+
+      # Regression for the transaction-poisoning bug: a duplicate publish's
+      # RecordNotUnique must only unwind a SAVEPOINT (transaction(requires_new:
+      # true)), never the caller's enclosing transaction. Before the fix, the
+      # second publish's rescue-side `find_by` raised
+      # PG::InFailedSqlTransaction because the whole outer transaction was
+      # already aborted, and that raise rolled back the unrelated
+      # `account.update!` performed in the same transaction below.
+      it 'does not poison the enclosing transaction on a duplicate publish' do
+        travel_to Time.zone.local(2026, 8, 12, 10, 0, 0) do
+          expect do
+            ActiveRecord::Base.transaction do
+              described_class.publish(:producer_created, account: account, subject: contact, payload: {})
+              described_class.publish(:producer_created, account: account, subject: contact, payload: {})
+              account.update!(name: 'Poison Probe Cooperative')
+            end
+          end.not_to raise_error
+
+          expect(described_class.count).to eq(1)
+          expect(account.reload.name).to eq('Poison Probe Cooperative')
+          expect(CoopCore::DeliverEventJob).to have_been_enqueued.with(described_class.last.id, subscription.id).once
+        end
+      end
+
+      it 'enqueues nothing when the caller transaction is rolled back after a successful publish' do
+        expect do
+          ActiveRecord::Base.transaction do
+            described_class.publish(:producer_created, account: account, subject: contact, payload: {})
+            raise ActiveRecord::Rollback
+          end
+        end.not_to raise_error
+
+        expect(described_class.count).to eq(0)
+        expect(CoopCore::DeliverEventJob).not_to have_been_enqueued
+      end
+    end
   end
 
   describe 'auditing' do
