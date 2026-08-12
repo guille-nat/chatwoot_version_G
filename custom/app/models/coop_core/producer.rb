@@ -32,6 +32,14 @@ class CoopCore::Producer < CoopCore::ApplicationRecord
   before_validation :normalize_external_ref
   before_validation :prepare_jsonb_attributes
 
+  # design §8.5's canonical outbox example. after_create_commit (not
+  # after_create) for the same reason CoopCore::Event.publish itself defers
+  # to after_commit -- the row must be durable before anything can be
+  # enqueued off of it. F1 emits producer_created only -- no
+  # producer_updated/deleted -- to keep this a minimal, deliberate emission
+  # point rather than an event storm (S7 task doc).
+  after_create_commit :publish_producer_created_event
+
   def cuit_formatted
     return nil if cuit.blank?
 
@@ -70,5 +78,12 @@ class CoopCore::Producer < CoopCore::ApplicationRecord
 
   def prepare_jsonb_attributes
     self.custom_attributes = {} unless custom_attributes.is_a?(Hash)
+  end
+
+  def publish_producer_created_event
+    return unless ::CoopCore::Feature.enabled?(:producers, account: account)
+
+    ::CoopCore::Event.publish(:producer_created, account: account, subject: self,
+                                                 payload: { producer_id: id, business_name: business_name })
   end
 end

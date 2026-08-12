@@ -10,6 +10,9 @@ require 'rails_helper'
 # must be destroyed synchronously before the account row delete --
 # `dependent: :destroy_async` enqueues after commit and arrives too late.
 # See custom/app/models/custom/concerns/account.rb.
+# rubocop:disable RSpec/MultipleMemoizedHelpers -- one row per coop_core
+# table with a real DB FK to accounts, by design (S4a review-fix lesson: a
+# zero-child-row cascade spec proves nothing per table).
 RSpec.describe 'Account destroy with coop_core children', type: :model do
   let(:account) { create(:account) }
   let!(:branch) { create(:coop_core_branch, account: account) }
@@ -53,6 +56,10 @@ RSpec.describe 'Account destroy with coop_core children', type: :model do
   let!(:branch_scoped_staff_role_assignment) do
     create(:coop_core_staff_role_assignment, account: account, staff_profile: staff_profile, staff_role: staff_role, branch: branch)
   end
+  # S7: coop_core_events/coop_core_event_subscriptions carry the same kind of
+  # real, non-deferrable DB FK to accounts as every table above.
+  let!(:event) { create(:coop_core_event, account: account) }
+  let!(:event_subscription) { create(:coop_core_event_subscription, account: account) }
 
   it 'destroys the account without raising a foreign key error' do
     expect { account.destroy! }.not_to raise_error
@@ -73,6 +80,9 @@ RSpec.describe 'Account destroy with coop_core children', type: :model do
       expect(CoopCore::StaffProfile.exists?(staff_profile.id)).to be false
       expect(CoopCore::StaffRoleAssignment.exists?(staff_role_assignment.id)).to be false
       expect(CoopCore::StaffRoleAssignment.exists?(branch_scoped_staff_role_assignment.id)).to be false
+      expect(CoopCore::Event.exists?(event.id)).to be false
+      expect(CoopCore::EventSubscription.exists?(event_subscription.id)).to be false
     end
   end
 end
+# rubocop:enable RSpec/MultipleMemoizedHelpers

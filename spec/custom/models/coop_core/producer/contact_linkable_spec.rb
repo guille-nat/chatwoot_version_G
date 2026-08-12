@@ -97,6 +97,23 @@ RSpec.describe CoopCore::Producer::ContactLinkable do
 
         CoopCore::Producer.auto_link_contact(contact)
       end
+
+      it 'publishes a link_conflict event to the outbox (design §8.5 / TODO(S7))' do
+        contact = create(:contact, account: account, phone_number: '+5491122334455')
+        candidate_a = create(:coop_core_producer, account: account, primary_phone: contact.phone_number)
+        candidate_b = create(:coop_core_producer, account: account, primary_phone: contact.phone_number)
+
+        expect do
+          CoopCore::Producer.auto_link_contact(contact)
+        end.to change(CoopCore::Event, :count).by(1)
+
+        event = CoopCore::Event.last
+        expect(event.key).to eq('link_conflict')
+        expect(event.payload).to eq(
+          'contact_id' => contact.id,
+          'candidate_producer_ids' => [candidate_a.id, candidate_b.id].sort
+        )
+      end
     end
 
     context 'when the producer already has a different contact linked' do

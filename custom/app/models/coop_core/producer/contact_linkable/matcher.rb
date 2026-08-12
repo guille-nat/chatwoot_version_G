@@ -49,12 +49,21 @@ class CoopCore::Producer::ContactLinkable::Matcher
     digits.length == 11 ? digits : nil
   end
 
-  # TODO(S7): record `link_conflict` in the coop_core_events outbox once it
-  # ships (design §8.5) -- logging is the interim signal until then.
+  # S7: records `link_conflict` in the coop_core_events outbox (design
+  # §8.5) for operator follow-up, in addition to the structured log line --
+  # callers here (CoopCoreListener/CoopCore::LinkProducerJob) already gate
+  # on the producers module flag before ever reaching auto_link_contact, so
+  # no extra feature check is needed here.
   def log_conflict
     Rails.logger.warn(
       "[CoopCore] link_conflict account_id=#{contact.account_id} contact_id=#{contact.id} " \
       "candidate_producer_ids=#{candidates.map(&:id).sort}"
+    )
+    ::CoopCore::Event.publish(
+      :link_conflict,
+      account: contact.account,
+      subject: contact,
+      payload: { contact_id: contact.id, candidate_producer_ids: candidates.map(&:id).sort }
     )
   end
 end

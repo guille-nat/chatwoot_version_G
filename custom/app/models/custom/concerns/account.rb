@@ -33,5 +33,10 @@ module Custom::Concerns::Account
     # dependent: :destroy as a second, redundant safety net.
     has_many :coop_staff_profiles, class_name: 'CoopCore::StaffProfile', dependent: :destroy
     has_many :coop_staff_roles, class_name: 'CoopCore::StaffRole', dependent: :destroy
+    # S7: coop_core_events/coop_core_event_subscriptions carry the same kind
+    # of real, non-deferrable DB FK to accounts as every association above
+    # -- dependent: :destroy (never :destroy_async), same lesson.
+    has_many :coop_events, class_name: 'CoopCore::Event', dependent: :destroy
+    has_many :coop_event_subscriptions, class_name: 'CoopCore::EventSubscription', dependent: :destroy
   end
 end

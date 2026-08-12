@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_12_110200) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_12_120100) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -781,6 +781,29 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_12_110200) do
     t.index ["plot_id", "campaign"], name: "index_coop_core_crops_on_plot_id_and_campaign"
   end
 
+  create_table "coop_core_event_subscriptions", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "url", null: false
+    t.string "secret", null: false
+    t.text "event_keys", default: [], null: false, array: true
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "active"], name: "index_coop_core_event_subscriptions_on_account_id_and_active"
+  end
+
+  create_table "coop_core_events", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "key", null: false
+    t.jsonb "payload", null: false
+    t.datetime "occurred_at", null: false
+    t.string "idempotency_key", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "idempotency_key"], name: "index_coop_core_events_on_account_id_and_idempotency_key", unique: true
+    t.index ["account_id", "key", "occurred_at"], name: "index_coop_core_events_on_account_id_and_key_and_occurred_at"
+  end
+
   create_table "coop_core_fields", force: :cascade do |t|
     t.integer "account_id", null: false
     t.bigint "producer_id", null: false
@@ -1521,6 +1544,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_12_110200) do
   add_foreign_key "coop_core_cooperative_profiles", "accounts"
   add_foreign_key "coop_core_crops", "accounts"
   add_foreign_key "coop_core_crops", "coop_core_plots", column: "plot_id", on_delete: :cascade
+  add_foreign_key "coop_core_event_subscriptions", "accounts"
+  add_foreign_key "coop_core_events", "accounts"
   add_foreign_key "coop_core_fields", "accounts"
   add_foreign_key "coop_core_fields", "coop_core_branches", column: "branch_id", on_delete: :nullify
   add_foreign_key "coop_core_fields", "coop_core_producers", column: "producer_id", on_delete: :cascade

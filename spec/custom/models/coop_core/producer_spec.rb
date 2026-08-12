@@ -155,6 +155,39 @@ RSpec.describe CoopCore::Producer, type: :model do
     end
   end
 
+  describe 'producer_created event (design §8.5 canonical example)' do
+    it 'publishes a producer_created event on create' do
+      expect do
+        create(:coop_core_producer, account: account)
+      end.to change(CoopCore::Event, :count).by(1)
+    end
+
+    it 'stores the producer_created key' do
+      producer = create(:coop_core_producer, account: account)
+
+      expect(CoopCore::Event.last.key).to eq('producer_created')
+      expect(CoopCore::Event.last.payload).to eq('producer_id' => producer.id, 'business_name' => producer.business_name)
+    end
+
+    it 'does not publish an event on update' do
+      producer = create(:coop_core_producer, account: account)
+
+      expect do
+        producer.update!(business_name: 'Nuevo Nombre')
+      end.not_to change(CoopCore::Event, :count)
+    end
+
+    context 'when the producers module is disabled for the account' do
+      before { CoopCore::Feature.set_account_override(:producers, account: account, enabled: false) }
+
+      it 'does not publish an event' do
+        expect do
+          create(:coop_core_producer, account: account)
+        end.not_to change(CoopCore::Event, :count)
+      end
+    end
+  end
+
   describe 'Account association' do
     it 'is included in the owning account coop_producers association' do
       producer = create(:coop_core_producer, account: account)
