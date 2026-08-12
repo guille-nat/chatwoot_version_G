@@ -41,6 +41,18 @@ RSpec.describe 'Account destroy with coop_core children', type: :model do
   let!(:staff_role_assignment) do
     create(:coop_core_staff_role_assignment, account: account, staff_profile: staff_profile, staff_role: staff_role)
   end
+  # Review-fix (S6): branch_id now carries on_delete: :cascade (not
+  # :nullify), and CoopCore::Branch also declares
+  # has_many :staff_role_assignments, dependent: :destroy. That means this
+  # branch-scoped row can be destroyed twice over during Account#destroy! --
+  # once when `coop_branches` destroys `branch` (app-level cascade), and
+  # again (a no-op, since it is already gone) when `coop_staff_profiles`
+  # destroys `staff_profile`'s remaining role_assignments. Exercise that
+  # path explicitly so a destroy-ordering regression doesn't just silently
+  # pass because the account-level spec above never used a branch-scoped row.
+  let!(:branch_scoped_staff_role_assignment) do
+    create(:coop_core_staff_role_assignment, account: account, staff_profile: staff_profile, staff_role: staff_role, branch: branch)
+  end
 
   it 'destroys the account without raising a foreign key error' do
     expect { account.destroy! }.not_to raise_error
@@ -60,6 +72,7 @@ RSpec.describe 'Account destroy with coop_core children', type: :model do
       expect(CoopCore::StaffRole.exists?(staff_role.id)).to be false
       expect(CoopCore::StaffProfile.exists?(staff_profile.id)).to be false
       expect(CoopCore::StaffRoleAssignment.exists?(staff_role_assignment.id)).to be false
+      expect(CoopCore::StaffRoleAssignment.exists?(branch_scoped_staff_role_assignment.id)).to be false
     end
   end
 end

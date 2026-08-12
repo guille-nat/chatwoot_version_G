@@ -157,5 +157,30 @@ RSpec.describe CoopCore::StaffRole, type: :model do
 
       expect { described_class.ensure_seeded!(account) }.not_to change(described_class, :count)
     end
+
+    context 'when a concurrent request wins the race on the unique index' do
+      before do
+        # Simulates two concurrent first-index requests both passing the
+        # find_or_create_by! SELECT before either INSERTs: the first call
+        # raises RecordNotUnique (as Postgres would once a concurrent
+        # transaction's INSERT commits first), the real implementation
+        # underneath is left untouched for every other seed key.
+        call_count = 0
+        allow(described_class).to receive(:find_or_create_by!).and_wrap_original do |method, *args, &block|
+          call_count += 1
+          raise ActiveRecord::RecordNotUnique, 'duplicate key value violates unique constraint' if call_count == 1
+
+          method.call(*args, &block)
+        end
+      end
+
+      it 'does not raise' do
+        expect { described_class.ensure_seeded!(account) }.not_to raise_error
+      end
+
+      it 'still creates one role per seeded key' do
+        expect { described_class.ensure_seeded!(account) }.to change(described_class, :count).by(6)
+      end
+    end
   end
 end

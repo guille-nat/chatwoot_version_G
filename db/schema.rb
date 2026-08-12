@@ -1536,7 +1536,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_12_110200) do
   add_foreign_key "coop_core_staff_profiles", "coop_core_branches", column: "default_branch_id", on_delete: :nullify
   add_foreign_key "coop_core_staff_profiles", "users", on_delete: :cascade
   add_foreign_key "coop_core_staff_role_assignments", "accounts"
-  add_foreign_key "coop_core_staff_role_assignments", "coop_core_branches", column: "branch_id", on_delete: :nullify
+  add_foreign_key "coop_core_staff_role_assignments", "coop_core_branches", column: "branch_id", on_delete: :cascade
   add_foreign_key "coop_core_staff_role_assignments", "coop_core_staff_profiles", column: "staff_profile_id", on_delete: :cascade
   add_foreign_key "coop_core_staff_role_assignments", "coop_core_staff_roles", column: "staff_role_id", on_delete: :cascade
   add_foreign_key "coop_core_staff_roles", "accounts"

@@ -56,15 +56,37 @@ class CoopCore::StaffRole < CoopCore::ApplicationRecord
   # never touches an existing row's permissions -- a cooperative that already
   # edited a seeded role keeps its edits across re-seeding (e.g. a later
   # slice appending new permission keys to SEEDS).
+  #
+  # Review-fix (S6): two concurrent first-index requests for the same
+  # account can both pass the find_or_create_by! SELECT before either
+  # INSERTs, then race on the (account_id, key) unique index -- the loser
+  # raises ActiveRecord::RecordNotUnique instead of returning the row the
+  # winner just created. Rescue once and retry: find_or_create_by! re-runs
+  # its own find_by first, so the retry simply picks up the winner's row
+  # (already "seeded", nothing left to create, no edited permissions ever
+  # touched) -- a single retry, not a loop, so a second genuine race would
+  # still raise.
   def self.ensure_seeded!(account)
     SEEDS.each do |key, attrs|
-      find_or_create_by!(account_id: account.id, key: key) do |role|
-        role.name = attrs[:name]
-        role.permissions = attrs[:permissions]
-        role.system = true
-      end
+      seed_role!(account, key, attrs)
     end
   end
+
+  def self.seed_role!(account, key, attrs)
+    attempt_seed_role!(account, key, attrs)
+  rescue ActiveRecord::RecordNotUnique
+    attempt_seed_role!(account, key, attrs)
+  end
+  private_class_method :seed_role!
+
+  def self.attempt_seed_role!(account, key, attrs)
+    find_or_create_by!(account_id: account.id, key: key) do |role|
+      role.name = attrs[:name]
+      role.permissions = attrs[:permissions]
+      role.system = true
+    end
+  end
+  private_class_method :attempt_seed_role!
 
   private
 

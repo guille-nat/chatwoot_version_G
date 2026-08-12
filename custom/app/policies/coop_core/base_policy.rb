@@ -79,7 +79,19 @@ class CoopCore::BasePolicy < ApplicationPolicy
       profile = ::CoopCore::StaffProfile.active.find_by(account_id: account.id, user_id: user&.id)
       return [] if profile.blank?
 
+      branch_ids_for(profile)
+    end
+
+    # Review-fix (S6): `[].all?(&:nil?)` is vacuously true in Ruby, so a
+    # profile with ZERO role assignments (e.g. its only assignment was just
+    # cascade-destroyed along with its branch) used to fall through to the
+    # same :all branch as a profile with one-or-more assignments that are
+    # all NULL-branch -- silently widening a just-revoked profile back to
+    # cooperative-wide access. Treat "no assignments at all" the same as
+    # "no profile" above: sees nothing branch-scoped.
+    def branch_ids_for(profile)
       branch_ids = profile.role_assignments.pluck(:branch_id)
+      return [] if branch_ids.empty?
       return :all if branch_ids.all?(&:nil?)
 
       branch_ids.compact.uniq

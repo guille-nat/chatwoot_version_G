@@ -32,10 +32,16 @@ class CreateCoopCoreStaffRoleAssignments < ActiveRecord::Migration[7.1]
     # CoopCore::StaffRole#role_assignments also declares
     # dependent: :destroy for the same reason.
     add_foreign_key :coop_core_staff_role_assignments, :coop_core_staff_roles, column: :staff_role_id, on_delete: :cascade
-    # ON DELETE SET NULL: mirrors coop_core_producers.branch_id -- deleting a
-    # branch must unassign the scoped role assignment (it becomes
-    # cooperative-wide, branch_id IS NULL), never block or cascade-delete it.
-    add_foreign_key :coop_core_staff_role_assignments, :coop_core_branches, column: :branch_id, on_delete: :nullify
+    # ON DELETE CASCADE (review-fix, S6): NOT :nullify. Unlike producers/
+    # fields, a NULL branch_id on an assignment is already a meaningful,
+    # overloaded state -- "cooperative-wide by design". Nullifying the
+    # branch_id on branch deletion collapsed a branch-scoped assignment into
+    # that same state, silently WIDENING the profile's access from one
+    # branch to the whole cooperative. Deleting a branch must instead revoke
+    # the scoped assignment entirely. CoopCore::Branch#staff_role_assignments
+    # also declares dependent: :destroy so the app-level cascade runs
+    # synchronously (same pattern as Producer -> Field in S4b).
+    add_foreign_key :coop_core_staff_role_assignments, :coop_core_branches, column: :branch_id, on_delete: :cascade
   end
 
   def add_staff_role_assignment_indexes

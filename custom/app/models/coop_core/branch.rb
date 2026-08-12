@@ -15,6 +15,17 @@ class CoopCore::Branch < CoopCore::ApplicationRecord
   # fields, never block or cascade-delete them. coop_core_fields.branch_id
   # carries the matching on_delete: :nullify DB backstop.
   has_many :fields, class_name: 'CoopCore::Field', dependent: :nullify
+  # Review-fix (S6): the OPPOSITE rule of #producers/#fields above. A branch-
+  # scoped CoopCore::StaffRoleAssignment's branch_id being set to NULL is NOT
+  # a safe fallback here -- NULL already means "cooperative-wide by design"
+  # (CoopCore::BasePolicy::Scope#accessible_branch_ids), so nullifying it on
+  # branch deletion would silently WIDEN the profile's access from one branch
+  # to the whole cooperative. The assignment must be destroyed instead.
+  # dependent: :destroy (never :destroy_async) so this runs synchronously,
+  # inside the same transaction as the branch delete -- see
+  # db/migrate/20260812110200_create_coop_core_staff_role_assignments.rb,
+  # which carries the matching on_delete: :cascade DB backstop.
+  has_many :staff_role_assignments, class_name: 'CoopCore::StaffRoleAssignment', dependent: :destroy
 
   KINDS = %w[branch plant silo office].freeze
 

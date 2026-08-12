@@ -189,5 +189,37 @@ RSpec.describe CoopCore::BasePolicy, type: :policy do
         expect(resolved).to contain_exactly(producer_in_branch_a, producer_in_branch_b, producer_with_no_branch)
       end
     end
+
+    # CoopCore::Field carries its own branch_id (design §4/Domain 4) --
+    # locks in that CoopCore::FieldPolicy::Scope goes through the same
+    # branch_filtered logic as ProducerPolicy::Scope above rather than only
+    # ever being exercised via CoopCore::Producer.
+    context 'when a CoopCore::FieldPolicy::Scope profile is assigned to a single branch' do
+      let!(:profile) { create(:coop_core_staff_profile, account: account, user: agent) }
+      let(:role) { create(:coop_core_staff_role, account: account, permissions: ['fields_read']) }
+      let!(:field_in_branch_a) { create(:coop_core_field, account: account, branch: branch_a) }
+      let!(:field_in_branch_b) { create(:coop_core_field, account: account, branch: branch_b) }
+      let!(:field_with_no_branch) { create(:coop_core_field, account: account) }
+
+      before { create(:coop_core_staff_role_assignment, account: account, staff_profile: profile, staff_role: role, branch: branch_a) }
+
+      it 'includes fields from the assigned branch' do
+        resolved = CoopCore::FieldPolicy::Scope.new(context_for(agent), CoopCore::Field).resolve
+
+        expect(resolved).to include(field_in_branch_a)
+      end
+
+      it 'includes cooperative-wide (NULL branch) fields' do
+        resolved = CoopCore::FieldPolicy::Scope.new(context_for(agent), CoopCore::Field).resolve
+
+        expect(resolved).to include(field_with_no_branch)
+      end
+
+      it 'excludes fields from a different branch' do
+        resolved = CoopCore::FieldPolicy::Scope.new(context_for(agent), CoopCore::Field).resolve
+
+        expect(resolved).not_to include(field_in_branch_b)
+      end
+    end
   end
 end
