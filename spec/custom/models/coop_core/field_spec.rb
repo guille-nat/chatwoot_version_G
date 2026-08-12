@@ -66,6 +66,16 @@ RSpec.describe CoopCore::Field, type: :model do
         expect(field).not_to be_valid
       end
     end
+
+    context 'when the account does not match the branch account' do
+      it 'is invalid' do
+        other_account = create(:account)
+        other_branch = create(:coop_core_branch, account: other_account)
+        field = build(:coop_core_field, account: account, producer: producer, branch: other_branch)
+
+        expect(field).not_to be_valid
+      end
+    end
   end
 
   describe 'normalization' do

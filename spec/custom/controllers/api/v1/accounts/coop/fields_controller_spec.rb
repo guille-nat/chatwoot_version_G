@@ -40,6 +40,18 @@ RSpec.describe 'Coop Fields API', type: :request do
       end
     end
 
+    context 'when it is a regular agent' do
+      it 'returns unauthorized' do
+        agent = create(:user, account: account, role: :agent)
+
+        get "/api/v1/accounts/#{account.id}/coop/producers/#{producer.id}/fields",
+            headers: agent.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
     context 'when the producers module is disabled for the account' do
       before do
         CoopCore::Feature.set_account_override(:producers, account: account, enabled: false)
@@ -90,6 +102,18 @@ RSpec.describe 'Coop Fields API', type: :request do
 
       expect(response).to have_http_status(:not_found)
     end
+
+    it 'returns unprocessable_entity for a branch belonging to another account' do
+      other_account = create(:account)
+      other_branch = create(:coop_core_branch, account: other_account)
+
+      post "/api/v1/accounts/#{account.id}/coop/producers/#{producer.id}/fields",
+           params: { field: { name: 'Campo Norte', branch_id: other_branch.id } },
+           headers: admin.create_new_auth_token,
+           as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
   end
 
   describe 'GET /api/v1/accounts/{account.id}/coop/fields/{id}' do
@@ -128,6 +152,20 @@ RSpec.describe 'Coop Fields API', type: :request do
 
       expect(response).to have_http_status(:success)
       expect(response.parsed_body['payload']['name']).to eq('Campo Actualizado')
+    end
+
+    it 'returns not found when updating a field from another account' do
+      other_account = create(:account)
+      other_producer = create(:coop_core_producer, account: other_account)
+      other_field = create(:coop_core_field, account: other_account, producer: other_producer, name: 'Other Account Field')
+
+      patch "/api/v1/accounts/#{account.id}/coop/fields/#{other_field.id}",
+            params: { field: { name: 'Hijack Attempt' } },
+            headers: admin.create_new_auth_token,
+            as: :json
+
+      expect(response).to have_http_status(:not_found)
+      expect(other_field.reload.name).to eq('Other Account Field')
     end
   end
 

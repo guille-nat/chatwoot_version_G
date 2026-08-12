@@ -188,6 +188,18 @@ RSpec.describe 'Coop Producers API', type: :request do
 
       expect(response.parsed_body['payload']['contact_id']).to be_nil
     end
+
+    it 'returns unprocessable_entity for a branch belonging to another account' do
+      other_account = create(:account)
+      other_branch = create(:coop_core_branch, account: other_account)
+
+      post "/api/v1/accounts/#{account.id}/coop/producers",
+           params: { producer: { business_name: 'Agropecuaria del Sur', branch_id: other_branch.id } },
+           headers: admin.create_new_auth_token,
+           as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
   end
 
   describe 'PATCH /api/v1/accounts/{account.id}/coop/producers/{id}' do

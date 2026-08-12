@@ -14,6 +14,7 @@ class CoopCore::Field < CoopCore::ApplicationRecord
   validates :name, presence: true, uniqueness: { scope: :producer_id, case_sensitive: false }
   validates :total_hectares, numericality: { greater_than: 0 }, allow_nil: true
   validate :account_matches_producer
+  validate :account_matches_branch
 
   before_validation :normalize_external_ref
   before_validation :prepare_jsonb_attributes
@@ -24,6 +25,12 @@ class CoopCore::Field < CoopCore::ApplicationRecord
     return if producer.blank? || account_id.blank?
 
     errors.add(:producer, :invalid) if producer.account_id != account_id
+  end
+
+  def account_matches_branch
+    return if branch.blank? || account_id.blank?
+
+    errors.add(:branch, :invalid) if branch.account_id != account_id
   end
 
   # Without this, '' is a real value to a future partial unique index (it

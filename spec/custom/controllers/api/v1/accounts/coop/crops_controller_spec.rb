@@ -43,6 +43,40 @@ RSpec.describe 'Coop Crops API', type: :request do
         expect(response).to have_http_status(:not_found)
       end
     end
+
+    context 'when it is a regular agent' do
+      it 'returns unauthorized' do
+        agent = create(:user, account: account, role: :agent)
+
+        get "/api/v1/accounts/#{account.id}/coop/plots/#{plot.id}/crops",
+            headers: agent.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context 'when the producers module is disabled for the account' do
+      before do
+        CoopCore::Feature.set_account_override(:producers, account: account, enabled: false)
+      end
+
+      it 'returns forbidden' do
+        get "/api/v1/accounts/#{account.id}/coop/plots/#{plot.id}/crops",
+            headers: admin.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it 'renders the module_disabled error_code' do
+        get "/api/v1/accounts/#{account.id}/coop/plots/#{plot.id}/crops",
+            headers: admin.create_new_auth_token,
+            as: :json
+
+        expect(response.parsed_body['error_code']).to eq('module_disabled')
+      end
+    end
   end
 
   describe 'POST /api/v1/accounts/{account.id}/coop/plots/{plot.id}/crops' do
@@ -76,6 +110,20 @@ RSpec.describe 'Coop Crops API', type: :request do
            as: :json
 
       expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it 'returns not found when the plot belongs to another account' do
+      other_account = create(:account)
+      other_producer = create(:coop_core_producer, account: other_account)
+      other_field = create(:coop_core_field, account: other_account, producer: other_producer)
+      other_plot = create(:coop_core_plot, account: other_account, field: other_field)
+
+      post "/api/v1/accounts/#{account.id}/coop/plots/#{other_plot.id}/crops",
+           params: valid_params,
+           headers: admin.create_new_auth_token,
+           as: :json
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 
@@ -117,6 +165,22 @@ RSpec.describe 'Coop Crops API', type: :request do
 
       expect(response).to have_http_status(:success)
       expect(response.parsed_body['payload']['status']).to eq('sown')
+    end
+
+    it 'returns not found when updating a crop from another account' do
+      other_account = create(:account)
+      other_producer = create(:coop_core_producer, account: other_account)
+      other_field = create(:coop_core_field, account: other_account, producer: other_producer)
+      other_plot = create(:coop_core_plot, account: other_account, field: other_field)
+      other_crop = create(:coop_core_crop, account: other_account, plot: other_plot, status: 'planned')
+
+      patch "/api/v1/accounts/#{account.id}/coop/crops/#{other_crop.id}",
+            params: { crop: { status: 'sown' } },
+            headers: admin.create_new_auth_token,
+            as: :json
+
+      expect(response).to have_http_status(:not_found)
+      expect(other_crop.reload.status).to eq('planned')
     end
   end
 
