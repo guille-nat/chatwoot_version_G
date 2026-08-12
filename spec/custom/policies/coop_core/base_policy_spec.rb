@@ -135,6 +135,116 @@ RSpec.describe CoopCore::BasePolicy, type: :policy do
     end
   end
 
+  describe 'CoopCore::AuditLogPolicy (audit_read, design §7.1/§9)' do
+    let(:administrator) { create(:user, account: account, role: :administrator) }
+    let(:agent) { create(:user, account: account, role: :agent) }
+
+    it 'grants index? to an administrator with no staff profile' do
+      policy = CoopCore::AuditLogPolicy.new(context_for(administrator), CoopCore::AuditLog)
+
+      expect(policy.index?).to be true
+    end
+
+    it 'denies index? to an agent with no staff profile' do
+      policy = CoopCore::AuditLogPolicy.new(context_for(agent), CoopCore::AuditLog)
+
+      expect(policy.index?).to be false
+    end
+
+    context 'when the agent has a staff profile with audit_read' do
+      let(:role) { create(:coop_core_staff_role, account: account, permissions: ['audit_read']) }
+      let!(:profile) { create(:coop_core_staff_profile, account: account, user: agent) }
+
+      before { create(:coop_core_staff_role_assignment, account: account, staff_profile: profile, staff_role: role) }
+
+      it 'grants index?' do
+        policy = CoopCore::AuditLogPolicy.new(context_for(agent), CoopCore::AuditLog)
+
+        expect(policy.index?).to be true
+      end
+    end
+  end
+
+  describe 'CoopCore::EventSubscriptionPolicy (modules_manage, design §7.1)' do
+    let(:administrator) { create(:user, account: account, role: :administrator) }
+    let(:agent) { create(:user, account: account, role: :agent) }
+
+    it 'grants index? to an administrator with no staff profile' do
+      policy = CoopCore::EventSubscriptionPolicy.new(context_for(administrator), CoopCore::EventSubscription)
+
+      expect(policy.index?).to be true
+    end
+
+    it 'denies index? to an agent with no staff profile' do
+      policy = CoopCore::EventSubscriptionPolicy.new(context_for(agent), CoopCore::EventSubscription)
+
+      expect(policy.index?).to be false
+    end
+
+    it 'denies create? to a profile that only has modules_read' do
+      role = create(:coop_core_staff_role, account: account, permissions: ['modules_read'])
+      profile = create(:coop_core_staff_profile, account: account, user: agent)
+      create(:coop_core_staff_role_assignment, account: account, staff_profile: profile, staff_role: role)
+
+      policy = CoopCore::EventSubscriptionPolicy.new(context_for(agent), CoopCore::EventSubscription)
+
+      expect(policy.create?).to be false
+    end
+
+    context 'when the agent has a staff profile with modules_manage' do
+      let(:role) { create(:coop_core_staff_role, account: account, permissions: ['modules_manage']) }
+      let!(:profile) { create(:coop_core_staff_profile, account: account, user: agent) }
+
+      before { create(:coop_core_staff_role_assignment, account: account, staff_profile: profile, staff_role: role) }
+
+      it 'grants create?' do
+        policy = CoopCore::EventSubscriptionPolicy.new(context_for(agent), CoopCore::EventSubscription)
+
+        expect(policy.create?).to be true
+      end
+    end
+  end
+
+  describe 'CoopCore::ProducerPolicy#export? (export_data, design §7.1)' do
+    let(:administrator) { create(:user, account: account, role: :administrator) }
+    let(:agent) { create(:user, account: account, role: :agent) }
+
+    it 'grants export? to an administrator' do
+      policy = CoopCore::ProducerPolicy.new(context_for(administrator), CoopCore::Producer)
+
+      expect(policy.export?).to be true
+    end
+
+    it 'denies export? to an agent with no staff profile' do
+      policy = CoopCore::ProducerPolicy.new(context_for(agent), CoopCore::Producer)
+
+      expect(policy.export?).to be false
+    end
+
+    it 'denies export? to a profile that only has producers_manage' do
+      role = create(:coop_core_staff_role, account: account, permissions: ['producers_manage'])
+      profile = create(:coop_core_staff_profile, account: account, user: agent)
+      create(:coop_core_staff_role_assignment, account: account, staff_profile: profile, staff_role: role)
+
+      policy = CoopCore::ProducerPolicy.new(context_for(agent), CoopCore::Producer)
+
+      expect(policy.export?).to be false
+    end
+
+    context 'when the agent has a staff profile with export_data' do
+      let(:role) { create(:coop_core_staff_role, account: account, permissions: ['export_data']) }
+      let!(:profile) { create(:coop_core_staff_profile, account: account, user: agent) }
+
+      before { create(:coop_core_staff_role_assignment, account: account, staff_profile: profile, staff_role: role) }
+
+      it 'grants export?' do
+        policy = CoopCore::ProducerPolicy.new(context_for(agent), CoopCore::Producer)
+
+        expect(policy.export?).to be true
+      end
+    end
+  end
+
   describe 'CoopCore::BasePolicy::Scope branch filtering (design §7.4)' do
     let(:agent) { create(:user, account: account, role: :agent) }
     let(:administrator) { create(:user, account: account, role: :administrator) }

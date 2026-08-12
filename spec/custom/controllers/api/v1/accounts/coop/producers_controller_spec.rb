@@ -229,6 +229,86 @@ RSpec.describe 'Coop Producers API', type: :request do
     end
   end
 
+  # custom/config/routes.rb sets `defaults: { format: 'json' }` on the whole
+  # coop namespace. Rails only lets an incoming request override a routing
+  # *default* via the actual `.:format` PATH extension -- `parameters` is
+  # built as `query_parameters.merge(path_parameters)` (path wins), so a
+  # `?format=csv` QUERY STRING param can never beat the namespace default.
+  # Every export request below therefore uses the `.csv`/`.json` path
+  # extension, not a format query param.
+  describe 'GET /api/v1/accounts/{account.id}/coop/producers/export' do
+    context 'when it is an unauthenticated user' do
+      it 'returns unauthorized' do
+        get "/api/v1/accounts/#{account.id}/coop/producers/export.csv"
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context 'when it is a regular agent with no staff profile' do
+      it 'returns unauthorized' do
+        agent = create(:user, account: account, role: :agent)
+
+        get "/api/v1/accounts/#{account.id}/coop/producers/export.csv",
+            headers: agent.create_new_auth_token
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context 'when it is an authenticated administrator' do
+      before { create(:coop_core_producer, account: account, business_name: 'El Trigal, S.A.', cuit: '20-12345678-6', branch: nil) }
+
+      it 'returns a CSV export' do
+        get "/api/v1/accounts/#{account.id}/coop/producers/export.csv",
+            headers: admin.create_new_auth_token
+
+        expect(response).to have_http_status(:success)
+        expect(response.media_type).to eq('text/csv')
+      end
+
+      it 'round-trips the producer data through the CSV body' do
+        get "/api/v1/accounts/#{account.id}/coop/producers/export.csv",
+            headers: admin.create_new_auth_token
+
+        row = CSV.parse(response.body, headers: true).first
+        expect(row['business_name']).to eq('El Trigal, S.A.')
+        expect(row['cuit_formatted']).to eq('20-12345678-6')
+      end
+
+      it 'does not include producers from another account' do
+        other_account = create(:account)
+        create(:coop_core_producer, account: other_account, business_name: 'Otra Cooperativa')
+
+        get "/api/v1/accounts/#{account.id}/coop/producers/export.csv",
+            headers: admin.create_new_auth_token
+
+        expect(response.body).not_to include('Otra Cooperativa')
+      end
+
+      it 'returns a JSON export when the json format is requested' do
+        get "/api/v1/accounts/#{account.id}/coop/producers/export.json",
+            headers: admin.create_new_auth_token
+
+        expect(response.parsed_body.first['business_name']).to eq('El Trigal, S.A.')
+      end
+    end
+
+    context 'when the profile has no export_data permission' do
+      it 'returns unauthorized' do
+        agent = create(:user, account: account, role: :agent)
+        role = create(:coop_core_staff_role, account: account, permissions: ['producers_read'])
+        profile = create(:coop_core_staff_profile, account: account, user: agent)
+        create(:coop_core_staff_role_assignment, account: account, staff_profile: profile, staff_role: role)
+
+        get "/api/v1/accounts/#{account.id}/coop/producers/export.csv",
+            headers: agent.create_new_auth_token
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
+
   describe 'DELETE /api/v1/accounts/{account.id}/coop/producers/{id}' do
     it 'deletes the producer' do
       producer = create(:coop_core_producer, account: account)
