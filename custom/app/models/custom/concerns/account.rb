@@ -23,5 +23,15 @@ module Custom::Concerns::Account
     has_one :coop_cooperative_profile, class_name: 'CoopCore::CooperativeProfile', dependent: :destroy
     has_many :coop_branches, class_name: 'CoopCore::Branch', dependent: :destroy
     has_many :coop_module_settings, class_name: 'CoopCore::ModuleSetting', dependent: :destroy
+    # S6: coop_core_staff_role_assignments carries real, non-deferrable DB FKs
+    # (ON DELETE CASCADE) to both coop_core_staff_profiles and
+    # coop_core_staff_roles, so either destroy order is safe at the DB level.
+    # Profiles are destroyed first purely so the app-level cascade
+    # (CoopCore::StaffProfile#role_assignments dependent: :destroy) fires
+    # audit callbacks on assignments before their role disappears underneath
+    # them -- CoopCore::StaffRole#role_assignments carries the same
+    # dependent: :destroy as a second, redundant safety net.
+    has_many :coop_staff_profiles, class_name: 'CoopCore::StaffProfile', dependent: :destroy
+    has_many :coop_staff_roles, class_name: 'CoopCore::StaffRole', dependent: :destroy
   end
 end

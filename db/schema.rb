@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_08_12_100200) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_12_110200) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -861,6 +861,46 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_12_100200) do
     t.index ["branch_id"], name: "index_coop_core_producers_on_branch_id"
   end
 
+  create_table "coop_core_staff_profiles", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.integer "user_id", null: false
+    t.bigint "default_branch_id"
+    t.text "beta_groups", default: [], null: false, array: true
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "user_id"], name: "index_coop_core_staff_profiles_on_account_id_and_user_id", unique: true
+    t.index ["beta_groups"], name: "index_coop_core_staff_profiles_on_beta_groups", using: :gin
+    t.index ["default_branch_id"], name: "index_coop_core_staff_profiles_on_default_branch_id"
+  end
+
+  create_table "coop_core_staff_role_assignments", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.bigint "staff_profile_id", null: false
+    t.bigint "staff_role_id", null: false
+    t.bigint "branch_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_coop_core_staff_role_assignments_on_account_id"
+    t.index ["branch_id"], name: "index_coop_core_staff_role_assignments_on_branch_id"
+    t.index ["staff_profile_id", "staff_role_id", "branch_id"], name: "index_coop_staff_role_assignments_on_profile_role_branch", unique: true, where: "(branch_id IS NOT NULL)"
+    t.index ["staff_profile_id", "staff_role_id"], name: "index_coop_staff_role_assignments_on_profile_role_no_branch", unique: true, where: "(branch_id IS NULL)"
+    t.index ["staff_role_id"], name: "index_coop_core_staff_role_assignments_on_staff_role_id"
+  end
+
+  create_table "coop_core_staff_roles", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "key", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.text "permissions", default: [], null: false, array: true
+    t.boolean "system", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "key"], name: "index_coop_core_staff_roles_on_account_id_and_key", unique: true
+    t.index ["permissions"], name: "index_coop_core_staff_roles_on_permissions", using: :gin
+  end
+
   create_table "copilot_messages", force: :cascade do |t|
     t.bigint "copilot_thread_id", null: false
     t.bigint "account_id", null: false
@@ -1492,6 +1532,14 @@ ActiveRecord::Schema[7.1].define(version: 2026_08_12_100200) do
   add_foreign_key "coop_core_producers", "accounts"
   add_foreign_key "coop_core_producers", "contacts", on_delete: :nullify
   add_foreign_key "coop_core_producers", "coop_core_branches", column: "branch_id", on_delete: :nullify
+  add_foreign_key "coop_core_staff_profiles", "accounts"
+  add_foreign_key "coop_core_staff_profiles", "coop_core_branches", column: "default_branch_id", on_delete: :nullify
+  add_foreign_key "coop_core_staff_profiles", "users", on_delete: :cascade
+  add_foreign_key "coop_core_staff_role_assignments", "accounts"
+  add_foreign_key "coop_core_staff_role_assignments", "coop_core_branches", column: "branch_id", on_delete: :nullify
+  add_foreign_key "coop_core_staff_role_assignments", "coop_core_staff_profiles", column: "staff_profile_id", on_delete: :cascade
+  add_foreign_key "coop_core_staff_role_assignments", "coop_core_staff_roles", column: "staff_role_id", on_delete: :cascade
+  add_foreign_key "coop_core_staff_roles", "accounts"
   add_foreign_key "inboxes", "portals"
   add_foreign_key "user_sessions", "users"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
