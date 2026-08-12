@@ -95,6 +95,16 @@ RSpec.describe CoopCore::Producer, type: :model do
         expect(producer).not_to be_valid
       end
     end
+
+    context 'when the account does not match the contact account' do
+      it 'is invalid' do
+        other_account = create(:account)
+        other_contact = create(:contact, account: other_account)
+        producer = build(:coop_core_producer, account: account, contact_id: other_contact.id)
+
+        expect(producer).not_to be_valid
+      end
+    end
   end
 
   describe 'normalization' do

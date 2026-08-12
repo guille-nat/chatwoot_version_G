@@ -26,6 +26,7 @@ class CoopCore::Producer < CoopCore::ApplicationRecord
   validates :external_ref, uniqueness: { scope: :account_id }, allow_nil: true
   validate :cuit_must_be_valid
   validate :account_matches_branch
+  validate :account_matches_contact
 
   before_validation :normalize_cuit
   before_validation :normalize_external_ref
@@ -59,6 +60,12 @@ class CoopCore::Producer < CoopCore::ApplicationRecord
     return if branch.blank? || account_id.blank?
 
     errors.add(:branch, :invalid) if branch.account_id != account_id
+  end
+
+  def account_matches_contact
+    return if contact.blank? || account_id.blank?
+
+    errors.add(:contact, :invalid) if contact.account_id != account_id
   end
 
   def prepare_jsonb_attributes

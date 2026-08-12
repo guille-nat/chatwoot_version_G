@@ -52,6 +52,31 @@ RSpec.describe CoopCore::Producer::ContactLinkable do
       end
     end
 
+    context 'when producers and contacts have a blank or nil cuit and no phone matches' do
+      it 'does not link any producer' do
+        create(:coop_core_producer, account: account, cuit: nil, primary_phone: nil)
+        create(:coop_core_producer, account: account, cuit: nil, primary_phone: nil)
+        contact = create(:contact, account: account, phone_number: nil, additional_attributes: { 'cuit' => '' })
+        other_contact = create(:contact, account: account, phone_number: nil, additional_attributes: {})
+
+        CoopCore::Producer.auto_link_contact(contact)
+        CoopCore::Producer.auto_link_contact(other_contact)
+
+        expect(CoopCore::Producer.where(account: account).pluck(:contact_id)).to all(be_nil)
+      end
+    end
+
+    context 'when the contact matches the same producer by both phone and cuit' do
+      it 'links the producer once' do
+        producer = create(:coop_core_producer, account: account, cuit: '20-12345678-6', primary_phone: '+5491122334455')
+        contact = create(:contact, account: account, phone_number: '+541122334455', additional_attributes: { 'cuit' => '20-12345678-6' })
+
+        CoopCore::Producer.auto_link_contact(contact)
+
+        expect(producer.reload.contact_id).to eq(contact.id)
+      end
+    end
+
     context 'when multiple producers match' do
       it 'does not link any producer' do
         contact = create(:contact, account: account, phone_number: '+5491122334455')
@@ -125,6 +150,26 @@ RSpec.describe CoopCore::Producer::ContactLinkable do
         other_contact = create(:contact, account: account)
 
         expect(producer.link_contact(other_contact)).to be false
+      end
+    end
+
+    context 'when the contact belongs to a different account' do
+      it 'does not link' do
+        other_account = create(:account)
+        producer = create(:coop_core_producer, account: account)
+        cross_tenant_contact = create(:contact, account: other_account)
+
+        expect(producer.link_contact(cross_tenant_contact)).to be false
+      end
+
+      it 'does not persist the cross-tenant link' do
+        other_account = create(:account)
+        producer = create(:coop_core_producer, account: account)
+        cross_tenant_contact = create(:contact, account: other_account)
+
+        producer.link_contact(cross_tenant_contact)
+
+        expect(producer.reload.contact_id).to be_nil
       end
     end
 

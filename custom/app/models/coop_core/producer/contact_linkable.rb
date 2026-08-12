@@ -34,6 +34,8 @@ module CoopCore::Producer::ContactLinkable
   rescue ActiveRecord::RecordNotUnique
     reload
     contact_id == contact.id
+  rescue ActiveRecord::RecordInvalid
+    false
   end
 
   # Manual entry point (DELETE /coop/producers/:id/contact_link). Idempotent.
