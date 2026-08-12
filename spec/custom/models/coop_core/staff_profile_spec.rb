@@ -132,4 +132,27 @@ RSpec.describe CoopCore::StaffProfile, type: :model do
       expect(described_class.auditing_enabled).to be true
     end
   end
+
+  describe 'nested role_assignments attributes' do
+    it 'creates a role assignment through role_assignments_attributes' do
+      role = create(:coop_core_staff_role, account: account)
+
+      profile = described_class.create!(
+        account: account, user: user,
+        role_assignments_attributes: [{ staff_role_id: role.id }]
+      )
+
+      expect(profile.role_assignments.reload.pluck(:staff_role_id)).to eq([role.id])
+    end
+
+    it 'destroys a role assignment through role_assignments_attributes with _destroy' do
+      role = create(:coop_core_staff_role, account: account)
+      profile = create(:coop_core_staff_profile, account: account, user: user)
+      assignment = create(:coop_core_staff_role_assignment, account: account, staff_profile: profile, staff_role: role)
+
+      profile.update!(role_assignments_attributes: [{ id: assignment.id, _destroy: true }])
+
+      expect(CoopCore::StaffRoleAssignment.exists?(assignment.id)).to be false
+    end
+  end
 end

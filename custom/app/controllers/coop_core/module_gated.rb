@@ -27,10 +27,13 @@ module CoopCore::ModuleGated
     @coop_features ||= ::CoopCore::Feature.for(account: Current.account, user: Current.user, branch: current_branch)
   end
 
-  # No staff profile / default-branch mechanism exists yet (S6). A caller
-  # that wants branch-scoped resolution today passes ?branch_id= explicitly;
-  # an unknown or foreign branch_id simply resolves to no branch context
-  # (find_by, not find!) rather than raising.
+  # S6 ships CoopCore::StaffProfile#default_branch_id, but wiring the
+  # "else profile.default_branch_id" fallback from design §5.2 tier 4 into
+  # this branch-context lookup is explicitly out of S6's stated resolver
+  # scope (tiers 2-3 only) -- deferred to a later slice. A caller that wants
+  # branch-scoped resolution today passes ?branch_id= explicitly; an unknown
+  # or foreign branch_id simply resolves to no branch context (find_by, not
+  # find!) rather than raising.
   def current_branch
     return nil if params[:branch_id].blank?
 

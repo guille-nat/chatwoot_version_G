@@ -77,6 +77,42 @@ RSpec.describe CoopCore::Feature::Resolver, type: :model do
       end
     end
 
+    # S6 wiring: derived_staff_profile was a no-op stub until CoopCore::
+    # StaffProfile existed (S1-S5). No resolver code changed to make these
+    # pass -- `defined?(::CoopCore::StaffProfile)` is now true and the
+    # existing lookup wires itself up automatically.
+    context 'with a real StaffProfile granting a beta_group membership (tier 2)' do
+      let(:staff_user) { create(:user, account: account) }
+
+      before { create(:coop_core_staff_profile, account: account, user: staff_user, beta_groups: ['pilot']) }
+
+      it 'resolves an enabled beta_group override without passing beta_groups explicitly' do
+        create(:coop_core_module_setting, account: account, module_key: 'market', scope_type: 'beta_group', scope_key: 'pilot', enabled: true)
+
+        resolver_for_staff_user = described_class.new(account: account, user: staff_user)
+
+        expect(resolver_for_staff_user.enabled?(:market)).to be true
+      end
+    end
+
+    context 'with a real StaffProfile holding a staff role assignment (tier 3)' do
+      let(:staff_user) { create(:user, account: account) }
+      let(:role) { create(:coop_core_staff_role, account: account) }
+
+      before do
+        profile = create(:coop_core_staff_profile, account: account, user: staff_user)
+        create(:coop_core_staff_role_assignment, account: account, staff_profile: profile, staff_role: role)
+      end
+
+      it 'resolves an enabled staff_role override without passing staff_role_ids explicitly' do
+        create(:coop_core_module_setting, account: account, module_key: 'market', scope_type: 'staff_role', scope_id: role.id, enabled: true)
+
+        resolver_for_staff_user = described_class.new(account: account, user: staff_user)
+
+        expect(resolver_for_staff_user.enabled?(:market)).to be true
+      end
+    end
+
     context 'with a user-scope override' do
       it 'beats the beta_group-scope override' do
         member = create(:user, account: account)

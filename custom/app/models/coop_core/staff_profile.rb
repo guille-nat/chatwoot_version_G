@@ -17,6 +17,14 @@ class CoopCore::StaffProfile < CoopCore::ApplicationRecord
                               inverse_of: :staff_profile
   has_many :staff_roles, through: :role_assignments
 
+  # Nested-attributes shape chosen for the staff profile create/update API
+  # (design: "accept staff_role_ids or assignments attributes -- pick the
+  # simplest defensible shape"). `assignments attributes` was chosen over a
+  # bare `staff_role_ids` array because branch-scoped assignment (design
+  # §7.4 branch filtering) is a real feature of this slice -- a plain id
+  # list could only ever express cooperative-wide (NULL branch) assignments.
+  accepts_nested_attributes_for :role_assignments, allow_destroy: true
+
   validates :user_id, uniqueness: { scope: :account_id }
   validate :user_belongs_to_account
   validate :account_matches_default_branch

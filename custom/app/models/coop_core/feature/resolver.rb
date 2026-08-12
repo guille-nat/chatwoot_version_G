@@ -4,10 +4,11 @@
 # (multiple matching rows, at least one disabled) all resolve to false.
 #
 # beta_groups: / staff_role_ids: accept explicit values so tiers 2-3 are
-# fully testable without CoopCore::StaffProfile, which does not exist until
-# S6. When omitted (nil, the default), they are derived from the account's
-# staff profile for the given user if that model is loadable -- a no-op today
-# (StaffProfile doesn't exist yet) that needs no change once S6 ships it.
+# independently testable without a real CoopCore::StaffProfile row. When
+# omitted (nil, the default), they are derived from the account's active
+# staff profile for the given user (S6 -- CoopCore::StaffProfile#beta_groups /
+# #staff_role_ids), with zero resolver code changes needed once that model
+# landed -- see spec/custom/models/coop_core/feature/resolver_spec.rb.
 class CoopCore::Feature::Resolver
   def initialize(account:, user: nil, branch: nil, beta_groups: nil, staff_role_ids: nil)
     @account = account

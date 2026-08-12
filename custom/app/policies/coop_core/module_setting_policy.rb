@@ -1,6 +1,5 @@
-# Real permission checks (staff_profile) land in S6; for now
-# CoopCore::BasePolicy#permitted? grants Chatwoot account administrators
-# only -- see CoopCore::BranchPolicy for the same S1-era note.
+# modules_read / modules_manage (design §7.1) -- real permission checks
+# (administrator bootstrap + staff_profile) live in CoopCore::BasePolicy (S6).
 class CoopCore::ModuleSettingPolicy < CoopCore::BasePolicy
   private
 

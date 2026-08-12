@@ -87,4 +87,23 @@ RSpec.describe CoopCore::StaffRoleAssignment, type: :model do
       expect(described_class.auditing_enabled).to be true
     end
   end
+
+  describe 'account_id defaulting' do
+    it 'inherits account_id from staff_profile when not set explicitly' do
+      assignment = described_class.new(staff_profile: staff_profile, staff_role: staff_role)
+
+      assignment.valid?
+
+      expect(assignment.account_id).to eq(staff_profile.account_id)
+    end
+
+    it 'does not override an explicitly set account_id' do
+      other_account = create(:account)
+      assignment = described_class.new(account_id: other_account.id, staff_profile: staff_profile, staff_role: staff_role)
+
+      assignment.valid?
+
+      expect(assignment.account_id).to eq(other_account.id)
+    end
+  end
 end

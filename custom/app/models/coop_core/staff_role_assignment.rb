@@ -14,7 +14,17 @@ class CoopCore::StaffRoleAssignment < CoopCore::ApplicationRecord
   validate :account_matches_staff_role
   validate :account_matches_branch
 
+  before_validation :inherit_account_from_staff_profile
+
   private
+
+  # Lets CoopCore::StaffProfile#role_assignments_attributes= build new
+  # assignment rows without the caller having to pass account_id explicitly
+  # (design: "keep it simple" nested-attributes shape for staff profile
+  # create/update -- see Api::V1::Accounts::Coop::StaffProfilesController).
+  def inherit_account_from_staff_profile
+    self.account_id ||= staff_profile&.account_id
+  end
 
   def account_matches_staff_profile
     return if staff_profile.blank? || account_id.blank?
