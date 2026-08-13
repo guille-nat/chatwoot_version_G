@@ -64,7 +64,7 @@
   depends_on: []
 - key: ai
   name: Inteligencia Artificial
-  description: Asistencia por IA (fuera de alcance de F1 -- declarado, sin código)
+  description: Asistencia automática para interpretar mensajes y documentos (próximamente)
   default_enabled: false
   licensable: true
   depends_on: []
