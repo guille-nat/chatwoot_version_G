@@ -5,6 +5,7 @@ import { MESSAGE_TYPES } from './constants.js';
 import { useCamelCase } from 'dashboard/composables/useTransformKeys';
 import { useMapGetter } from 'dashboard/composables/store.js';
 import MessageApi from 'dashboard/api/inbox/message.js';
+import { useI18n } from 'vue-i18n';
 
 /**
  * Props definition for the component
@@ -48,10 +49,38 @@ const allMessages = computed(() => {
   });
 });
 
+const { t } = useI18n();
 const currentChat = useMapGetter('getSelectedChat');
 
 // Cache for fetched reply messages to avoid duplicate API calls
 const fetchedReplyMessages = reactive(new Map());
+
+// --- Conversation separator logic ---
+// Shows a divider whenever a message belongs to a different conversation than
+// the previous one. This surfaces cross-conversation history inline.
+const shouldShowSeparator = (index, list) => {
+  if (index === 0) return false;
+  return list[index].conversationId !== list[index - 1].conversationId;
+};
+
+const getSeparatorLabel = message => {
+  const date = new Date(message.createdAt * 1000);
+  const dateStr = date.toLocaleDateString(undefined, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  const timeStr = date.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  return t('CONVERSATION.HISTORY_SEPARATOR', {
+    conversationId: message.conversationId,
+    date: dateStr,
+    time: timeStr,
+  });
+};
+// ------------------------------------
 
 /**
  * Fetches a specific message from the API by trying to get messages around it
@@ -101,6 +130,9 @@ const shouldGroupWithNext = (index, searchList) => {
 
   const current = searchList[index];
   const next = searchList[index + 1];
+
+  // Never group messages that belong to different conversations.
+  if (current.conversationId !== next.conversationId) return false;
 
   if (next.status === 'failed') return false;
 
@@ -166,6 +198,17 @@ const getInReplyToMessage = parentMessage => {
   <ul class="px-4 bg-n-surface-1">
     <slot name="beforeAll" />
     <template v-for="(message, index) in allMessages" :key="message.id">
+      <!-- Visual divider between messages from different conversations -->
+      <li
+        v-if="shouldShowSeparator(index, allMessages)"
+        class="flex items-center justify-center my-6"
+      >
+        <div
+          class="px-3 py-1 text-xs font-medium text-slate-500 bg-slate-100 rounded-full dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
+        >
+          {{ getSeparatorLabel(message) }}
+        </div>
+      </li>
       <slot
         v-if="firstUnreadId && message.id === firstUnreadId"
         name="unreadBadge"
