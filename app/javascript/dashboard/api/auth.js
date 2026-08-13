@@ -34,7 +34,15 @@ export default {
   getAuthData() {
     if (this.hasAuthCookie()) {
       const savedAuthInfo = Cookies.get('cw_d_session_info');
-      return JSON.parse(savedAuthInfo || '{}');
+      try {
+        return JSON.parse(savedAuthInfo || '{}');
+      } catch {
+        // Cookies are host-scoped, not port-scoped: another app on this host
+        // can leave a cw_d_session_info this parser can't read. A corrupt
+        // cookie must send the user to login, never kill the boot.
+        Cookies.remove('cw_d_session_info');
+        return false;
+      }
     }
     return false;
   },
