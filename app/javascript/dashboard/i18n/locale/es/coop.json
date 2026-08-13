@@ -1,4 +1,46 @@
 {
+  "COOP_MODULES": {
+    "HEADER": "Módulos",
+    "DESCRIPTION": "Activá o desactivá los módulos de CoopFlow para esta cooperativa. Un módulo puede seguir apagado aunque lo actives si depende de otro módulo que sigue apagado.",
+    "LOADING": "Cargando módulos...",
+    "ERROR_STATE": {
+      "PERMISSION": {
+        "TITLE": "No tenés permiso para ver Módulos",
+        "SUBTITLE": "Pedile a un administrador que te dé acceso a la gestión de módulos."
+      },
+      "GENERIC": {
+        "TITLE": "No pudimos cargar los módulos",
+        "SUBTITLE": "Algo salió mal al cargar la lista. Probá de nuevo."
+      },
+      "RETRY": "Reintentar"
+    },
+    "LIST": {
+      "TABLE_HEADER": {
+        "MODULE": "Módulo",
+        "TYPE": "Tipo",
+        "STATUS": "Estado",
+        "ENABLED": "Activo"
+      }
+    },
+    "BADGE": {
+      "LICENSABLE": "Complemento",
+      "CORE": "Base"
+    },
+    "STATUS": {
+      "ENABLED": "Activo",
+      "DISABLED": "Inactivo"
+    },
+    "DEPENDENCY": {
+      "REQUIRES": "Requiere {moduleNames}"
+    },
+    "TOGGLE": {
+      "NOT_APPLIED_DEPENDENCY": "{moduleName} sigue apagado: activá primero {blockingNames}.",
+      "NOT_APPLIED_GENERIC": "No se pudo activar {moduleName}. Puede estar deshabilitado por una configuración de mayor prioridad.",
+      "STILL_ENABLED_GENERIC": "{moduleName} sigue activo por una configuración de mayor prioridad.",
+      "PERMISSION_ERROR": "No tenés permiso para modificar los módulos.",
+      "ERROR": "No se pudo actualizar el módulo. Probá de nuevo."
+    }
+  },
   "COOP_PRODUCERS": {
     "HEADER": "Productores",
     "LOADING": "Cargando productores...",

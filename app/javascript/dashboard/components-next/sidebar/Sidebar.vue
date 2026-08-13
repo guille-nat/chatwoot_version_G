@@ -809,6 +809,12 @@ const menuItems = computed(() => {
           icon: 'i-lucide-briefcase',
           to: accountScopedRoute('general_settings_index'),
         },
+        {
+          name: 'Settings Modules',
+          label: t('SIDEBAR.MODULES'),
+          icon: 'i-lucide-layout-grid',
+          to: accountScopedRoute('coop_modules_settings_index'),
+        },
         // {
         //   name: 'Settings Captain',
         //   label: t('SIDEBAR.CAPTAIN_AI'),

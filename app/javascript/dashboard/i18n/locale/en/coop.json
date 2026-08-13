@@ -1,4 +1,46 @@
 {
+  "COOP_MODULES": {
+    "HEADER": "Modules",
+    "DESCRIPTION": "Turn CoopFlow modules on or off for this cooperative. A module can stay off even after enabling it if it depends on another module that is still off.",
+    "LOADING": "Loading modules...",
+    "ERROR_STATE": {
+      "PERMISSION": {
+        "TITLE": "You don't have access to Modules",
+        "SUBTITLE": "Ask an administrator to grant you access to module management."
+      },
+      "GENERIC": {
+        "TITLE": "We couldn't load the modules",
+        "SUBTITLE": "Something went wrong while loading the list. Please try again."
+      },
+      "RETRY": "Try again"
+    },
+    "LIST": {
+      "TABLE_HEADER": {
+        "MODULE": "Module",
+        "TYPE": "Type",
+        "STATUS": "Status",
+        "ENABLED": "Enabled"
+      }
+    },
+    "BADGE": {
+      "LICENSABLE": "Add-on",
+      "CORE": "Core"
+    },
+    "STATUS": {
+      "ENABLED": "Enabled",
+      "DISABLED": "Disabled"
+    },
+    "DEPENDENCY": {
+      "REQUIRES": "Requires {moduleNames}"
+    },
+    "TOGGLE": {
+      "NOT_APPLIED_DEPENDENCY": "{moduleName} is still off: enable {blockingNames} first.",
+      "NOT_APPLIED_GENERIC": "{moduleName} could not be turned on. It may be disabled by a higher-priority setting.",
+      "STILL_ENABLED_GENERIC": "{moduleName} is still on because of a higher-priority setting.",
+      "PERMISSION_ERROR": "You don't have permission to change modules.",
+      "ERROR": "Could not update the module. Please try again."
+    }
+  },
   "COOP_PRODUCERS": {
     "HEADER": "Producers",
     "LOADING": "Loading producers...",
