@@ -33,6 +33,9 @@ es:
     login_saml_user: This account uses SAML authentication. Please sign in through your organization's SAML provider.
     saml_not_available: SAML authentication is not available in this installation.
     inbox_deletetion_response: Su solicitud de eliminación de la bandeja de entrada será procesada en algún tiempo.
+  profile_settings:
+    sessions:
+      cannot_revoke_current: No puedes revocar la sesión actual.
   errors:
     account:
       reporting_timezone:
@@ -67,6 +70,9 @@ es:
     saml:
       feature_not_enabled: SAML feature not enabled for this account
       sso_not_enabled: SAML SSO is not enabled for this installation
+    conversations:
+      unread_counts:
+        feature_not_enabled: Función de conteo de no leídos no habilitada para esta cuenta
     data_import:
       data_type:
         invalid: Tipo de datos no válido
