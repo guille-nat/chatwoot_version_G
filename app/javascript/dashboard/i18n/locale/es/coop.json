@@ -1,0 +1,86 @@
+{
+  "COOP_PRODUCERS": {
+    "HEADER": "Productores",
+    "LOADING": "Cargando productores...",
+    "EMPTY_STATE": {
+      "TITLE": "No se encontraron productores"
+    },
+    "MODULE_DISABLED": {
+      "TITLE": "El módulo de Productores está deshabilitado",
+      "SUBTITLE": "Pedile a un administrador que habilite el módulo de Productores para esta cooperativa."
+    },
+    "LIST": {
+      "TABLE_HEADER": {
+        "BUSINESS_NAME": "Razón social",
+        "CUIT": "CUIT",
+        "TYPE": "Tipo",
+        "STATUS": "Estado",
+        "PHONE": "Teléfono"
+      },
+      "ACTIONS": "Acciones"
+    },
+    "TYPE": {
+      "INDIVIDUAL": "Persona física",
+      "COMPANY": "Persona jurídica"
+    },
+    "STATUS": {
+      "ACTIVE": "Activo",
+      "INACTIVE": "Inactivo"
+    },
+    "ACTIONS": {
+      "CREATE": "Agregar productor",
+      "EDIT": "Editar",
+      "DELETE": "Eliminar"
+    },
+    "FORM": {
+      "CREATE_TITLE": "Agregar productor",
+      "EDIT_TITLE": "Editar productor",
+      "FIELDS": {
+        "BUSINESS_NAME": "Razón social",
+        "TRADE_NAME": "Nombre de fantasía",
+        "PRODUCER_TYPE": "Tipo de productor",
+        "CUIT": "CUIT",
+        "PRIMARY_PHONE": "Teléfono",
+        "EMAIL": "Email",
+        "STATUS": "Estado",
+        "EXTERNAL_REF": "Referencia externa",
+        "NOTES": "Observaciones"
+      },
+      "PLACEHOLDERS": {
+        "CUIT": "20123456786"
+      },
+      "VALIDATION": {
+        "CUIT_INVALID": "Este CUIT no es válido."
+      },
+      "ACTIONS": {
+        "SAVE": "Guardar"
+      },
+      "MESSAGES": {
+        "CREATE_SUCCESS": "Productor creado.",
+        "CREATE_ERROR": "No se pudo crear el productor.",
+        "UPDATE_SUCCESS": "Productor actualizado.",
+        "UPDATE_ERROR": "No se pudo actualizar el productor."
+      }
+    },
+    "DELETE": {
+      "TITLE": "¿Eliminar productor?",
+      "DESCRIPTION": "Esto eliminará definitivamente al productor y sus registros relacionados.",
+      "DESCRIPTION_WITH_NAME": "Esto eliminará definitivamente a {producerName} y sus registros relacionados.",
+      "CONFIRM": "Eliminar productor",
+      "MESSAGES": {
+        "SUCCESS": "Productor eliminado.",
+        "ERROR": "No se pudo eliminar el productor."
+      }
+    },
+    "DETAIL": {
+      "LOADING": "Cargando productor...",
+      "EMPTY_STATE": {
+        "TITLE": "Productor no encontrado",
+        "SUBTITLE": "Es posible que este productor haya sido eliminado o ya no esté disponible en esta cuenta."
+      },
+      "FIELDS": {
+        "CREATED_AT": "Agregado"
+      }
+    }
+  }
+}

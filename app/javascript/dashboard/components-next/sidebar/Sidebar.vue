@@ -28,6 +28,7 @@ import {
   resolveSidebarSort,
   sortSidebarItems,
 } from 'dashboard/helper/sidebarSort';
+import { useCoopModulesStore } from 'dashboard/stores/coopModules';
 
 const props = defineProps({
   isMobileSidebarOpen: {
@@ -99,6 +100,14 @@ const hasDataImport = computed(() => {
     FEATURE_FLAGS.DATA_IMPORT
   );
 });
+
+// CoopFlow modules are a dynamic, per-account, API-driven gate (unlike
+// Chatwoot's static FEATURE_FLAGS enum above), so the sidebar has to fetch
+// their resolved state instead of reading a route meta flag.
+const coopModulesStore = useCoopModulesStore();
+const isProducersModuleEnabled = computed(() =>
+  coopModulesStore.isEnabled('producers')
+);
 
 const fetchConversationUnreadCounts = ([currentAccountId, isEnabled]) => {
   if (!currentAccountId) return;
@@ -253,6 +262,7 @@ onMounted(() => {
   store.dispatch('attributes/get');
   store.dispatch('customViews/get', 'conversation');
   store.dispatch('customViews/get', 'contact');
+  coopModulesStore.fetch();
 });
 
 watch([accountId, hasConversationUnreadCounts], fetchConversationUnreadCounts, {
@@ -666,6 +676,26 @@ const menuItems = computed(() => {
         },
       ],
     },
+    ...(isProducersModuleEnabled.value
+      ? [
+          {
+            name: 'Productores',
+            label: t('SIDEBAR.PRODUCERS'),
+            icon: 'i-lucide-tractor',
+            children: [
+              {
+                name: 'All Producers',
+                label: t('SIDEBAR.ALL_PRODUCERS'),
+                to: accountScopedRoute('coop_producers_dashboard_index'),
+                activeOn: [
+                  'coop_producers_dashboard_index',
+                  'coop_producers_dashboard_show',
+                ],
+              },
+            ],
+          },
+        ]
+      : []),
     {
       name: 'Reports',
       label: t('SIDEBAR.REPORTS'),

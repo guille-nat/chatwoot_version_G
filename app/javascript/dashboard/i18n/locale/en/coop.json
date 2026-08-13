@@ -1,0 +1,86 @@
+{
+  "COOP_PRODUCERS": {
+    "HEADER": "Producers",
+    "LOADING": "Loading producers...",
+    "EMPTY_STATE": {
+      "TITLE": "No producers found"
+    },
+    "MODULE_DISABLED": {
+      "TITLE": "The Producers module is disabled",
+      "SUBTITLE": "Ask an administrator to enable the Producers module for this cooperative."
+    },
+    "LIST": {
+      "TABLE_HEADER": {
+        "BUSINESS_NAME": "Business name",
+        "CUIT": "CUIT",
+        "TYPE": "Type",
+        "STATUS": "Status",
+        "PHONE": "Phone"
+      },
+      "ACTIONS": "Actions"
+    },
+    "TYPE": {
+      "INDIVIDUAL": "Individual",
+      "COMPANY": "Company"
+    },
+    "STATUS": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive"
+    },
+    "ACTIONS": {
+      "CREATE": "Add producer",
+      "EDIT": "Edit",
+      "DELETE": "Delete"
+    },
+    "FORM": {
+      "CREATE_TITLE": "Add producer",
+      "EDIT_TITLE": "Edit producer",
+      "FIELDS": {
+        "BUSINESS_NAME": "Business name",
+        "TRADE_NAME": "Trade name",
+        "PRODUCER_TYPE": "Producer type",
+        "CUIT": "CUIT",
+        "PRIMARY_PHONE": "Phone",
+        "EMAIL": "Email",
+        "STATUS": "Status",
+        "EXTERNAL_REF": "External reference",
+        "NOTES": "Notes"
+      },
+      "PLACEHOLDERS": {
+        "CUIT": "20123456786"
+      },
+      "VALIDATION": {
+        "CUIT_INVALID": "This CUIT is not valid."
+      },
+      "ACTIONS": {
+        "SAVE": "Save"
+      },
+      "MESSAGES": {
+        "CREATE_SUCCESS": "Producer created.",
+        "CREATE_ERROR": "Could not create the producer.",
+        "UPDATE_SUCCESS": "Producer updated.",
+        "UPDATE_ERROR": "Could not update the producer."
+      }
+    },
+    "DELETE": {
+      "TITLE": "Delete producer?",
+      "DESCRIPTION": "This will permanently remove the producer and its related records.",
+      "DESCRIPTION_WITH_NAME": "This will permanently remove {producerName} and its related records.",
+      "CONFIRM": "Delete producer",
+      "MESSAGES": {
+        "SUCCESS": "Producer deleted.",
+        "ERROR": "Could not delete the producer."
+      }
+    },
+    "DETAIL": {
+      "LOADING": "Loading producer...",
+      "EMPTY_STATE": {
+        "TITLE": "Producer not found",
+        "SUBTITLE": "This producer may have been removed or is no longer available in this account."
+      },
+      "FIELDS": {
+        "CREATED_AT": "Added"
+      }
+    }
+  }
+}
