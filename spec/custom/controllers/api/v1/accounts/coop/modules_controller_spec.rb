@@ -40,6 +40,17 @@ RSpec.describe 'Coop Modules API', type: :request do
         expect(market['enabled']).to be false
       end
 
+      it 'serializes each module dependency list from the registry' do
+        get "/api/v1/accounts/#{account.id}/coop/modules", headers: admin.create_new_auth_token, as: :json
+
+        payload = response.parsed_body['payload']
+        producers = payload.find { |entry| entry['key'] == 'producers' }
+        requests = payload.find { |entry| entry['key'] == 'requests' }
+
+        expect(producers['depends_on']).to eq([])
+        expect(requests['depends_on']).to eq(['producers'])
+      end
+
       it 'does not reflect another account module setting' do
         other_account = create(:account)
         create(:coop_core_module_setting, account: other_account, module_key: 'market', scope_type: 'account', enabled: true)
