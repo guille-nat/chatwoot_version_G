@@ -91,13 +91,7 @@ const enabledModel = computed({
         <div class="flex flex-col items-end gap-1">
           <div class="flex items-center gap-2">
             <Spinner v-if="pending" :size="14" />
-            <div :class="{ 'opacity-50': isDisabled }">
-              <Switch
-                :key="`${coopModule.key}:${pending}`"
-                v-model="enabledModel"
-                :disabled="isDisabled"
-              />
-            </div>
+            <Switch v-model="enabledModel" :disabled="isDisabled" />
           </div>
           <span
             v-if="isBlocked"
