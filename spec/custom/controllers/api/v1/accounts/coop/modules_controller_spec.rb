@@ -60,6 +60,15 @@ RSpec.describe 'Coop Modules API', type: :request do
         market = response.parsed_body['payload'].find { |entry| entry['key'] == 'market' }
         expect(market['enabled']).to be false
       end
+
+      it 'returns the account-canonical state instead of the acting admin personal override' do
+        create(:coop_core_module_setting, account: account, module_key: 'market', scope_type: 'user', scope_id: admin.id, enabled: true)
+
+        get "/api/v1/accounts/#{account.id}/coop/modules", headers: admin.create_new_auth_token, as: :json
+
+        market = response.parsed_body['payload'].find { |entry| entry['key'] == 'market' }
+        expect(market['enabled']).to be false
+      end
     end
   end
 
@@ -129,6 +138,33 @@ RSpec.describe 'Coop Modules API', type: :request do
               as: :json
 
         expect(CoopCore::Feature.enabled?(:market, account: other_account)).to be false
+      end
+
+      it 'shows the dependency cascade in the response payload' do
+        patch "/api/v1/accounts/#{account.id}/coop/modules/requests",
+              params: { enabled: true },
+              headers: admin.create_new_auth_token,
+              as: :json
+
+        patch "/api/v1/accounts/#{account.id}/coop/modules/producers",
+              params: { enabled: false },
+              headers: admin.create_new_auth_token,
+              as: :json
+
+        requests = response.parsed_body['payload'].find { |entry| entry['key'] == 'requests' }
+        expect(requests['enabled']).to be false
+      end
+
+      it 'returns the account-canonical state instead of the acting admin personal override' do
+        create(:coop_core_module_setting, account: account, module_key: 'market', scope_type: 'user', scope_id: admin.id, enabled: true)
+
+        patch "/api/v1/accounts/#{account.id}/coop/modules/weather",
+              params: { enabled: true },
+              headers: admin.create_new_auth_token,
+              as: :json
+
+        market = response.parsed_body['payload'].find { |entry| entry['key'] == 'market' }
+        expect(market['enabled']).to be false
       end
     end
   end
