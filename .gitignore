@@ -104,3 +104,7 @@ CLAUDE.local.md
 .pnpm-store/*
 local/
 Procfile.worktree
+
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md
