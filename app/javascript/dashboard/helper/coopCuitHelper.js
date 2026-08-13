@@ -36,10 +36,3 @@ export const isValidCuit = raw => {
 
   return Number(digits[10]) === checkDigit(digits.slice(0, 10));
 };
-
-export const formatCuit = raw => {
-  const digits = normalizeCuit(raw);
-  if (digits.length !== 11) return raw;
-
-  return `${digits.slice(0, 2)}-${digits.slice(2, 10)}-${digits.slice(10)}`;
-};

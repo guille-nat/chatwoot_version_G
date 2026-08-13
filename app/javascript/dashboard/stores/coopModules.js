@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 import camelcaseKeys from 'camelcase-keys';
 import CoopModulesAPI from 'dashboard/api/coop/modules';
-import { throwErrorMessage } from 'dashboard/store/utils/api';
 
 // CoopFlow modules are keyed by `key` (e.g. "producers"), not `id` --
 // createStore's generic CRUD factory assumes an `id`-keyed record list, so
@@ -36,7 +35,13 @@ export const useCoopModulesStore = defineStore('coopModules', {
         this.modules = camelcaseKeys(payload || [], { deep: true });
         return this.modules;
       } catch (error) {
-        return throwErrorMessage(error);
+        // The sidebar calls `fetch()` fire-and-forget on mount -- a modules
+        // fetch failure must never break the sidebar, so fail closed
+        // (`modules` stays whatever it already was, i.e. `[]` on first load)
+        // and just log instead of rejecting.
+        // eslint-disable-next-line no-console
+        console.error('[coopModules] Failed to fetch modules', error);
+        return this.modules;
       } finally {
         this.setUIFlag({ fetchingList: false });
       }

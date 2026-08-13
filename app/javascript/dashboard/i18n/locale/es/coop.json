@@ -9,6 +9,17 @@
       "TITLE": "El módulo de Productores está deshabilitado",
       "SUBTITLE": "Pedile a un administrador que habilite el módulo de Productores para esta cooperativa."
     },
+    "ERROR_STATE": {
+      "PERMISSION": {
+        "TITLE": "No tenés permiso para ver productores",
+        "SUBTITLE": "Pedile a un administrador que te dé acceso al módulo de Productores."
+      },
+      "GENERIC": {
+        "TITLE": "No pudimos cargar los productores",
+        "SUBTITLE": "Algo salió mal al cargar la lista. Probá de nuevo."
+      },
+      "RETRY": "Reintentar"
+    },
     "LIST": {
       "TABLE_HEADER": {
         "BUSINESS_NAME": "Razón social",
@@ -77,6 +88,17 @@
       "EMPTY_STATE": {
         "TITLE": "Productor no encontrado",
         "SUBTITLE": "Es posible que este productor haya sido eliminado o ya no esté disponible en esta cuenta."
+      },
+      "ERROR_STATE": {
+        "PERMISSION": {
+          "TITLE": "No tenés permiso para ver este productor",
+          "SUBTITLE": "Pedile a un administrador que te dé acceso al módulo de Productores."
+        },
+        "GENERIC": {
+          "TITLE": "No pudimos cargar este productor",
+          "SUBTITLE": "Algo salió mal al cargar la información. Probá de nuevo."
+        },
+        "RETRY": "Reintentar"
       },
       "FIELDS": {
         "CREATED_AT": "Agregado"

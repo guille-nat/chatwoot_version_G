@@ -29,6 +29,11 @@ const producers = computed(() => producersStore.getProducersList);
 const uiFlags = computed(() => producersStore.getUIFlags);
 const isFetchingList = computed(() => uiFlags.value.fetchingList);
 const isModuleDisabled = computed(() => producersStore.isModuleDisabled);
+const fetchError = computed(() => producersStore.getFetchError);
+const isPermissionError = computed(() => fetchError.value === 'permission');
+const canCreate = computed(
+  () => !isModuleDisabled.value && !isPermissionError.value
+);
 
 const tableHeaders = computed(() => [
   t('COOP_PRODUCERS.LIST.TABLE_HEADER.BUSINESS_NAME'),
@@ -74,6 +79,10 @@ const openDeleteDialog = producer => {
   deleteDialogRef.value?.open(producer);
 };
 
+const retryFetch = () => {
+  producersStore.get();
+};
+
 onMounted(() => {
   producersStore.get();
 });
@@ -88,7 +97,7 @@ onMounted(() => {
         {{ t('COOP_PRODUCERS.HEADER') }}
       </h1>
       <Button
-        v-if="!isModuleDisabled"
+        v-if="canCreate"
         icon="i-lucide-plus"
         :label="t('COOP_PRODUCERS.ACTIONS.CREATE')"
         @click="openCreateDialog"
@@ -108,6 +117,40 @@ onMounted(() => {
           <p class="max-w-md text-sm text-n-slate-11">
             {{ t('COOP_PRODUCERS.MODULE_DISABLED.SUBTITLE') }}
           </p>
+        </div>
+
+        <div
+          v-else-if="fetchError"
+          class="flex flex-col items-center justify-center gap-3 px-6 py-24 text-center rounded-2xl border border-n-weak bg-n-solid-2"
+        >
+          <Icon
+            :icon="
+              isPermissionError ? 'i-lucide-lock' : 'i-lucide-triangle-alert'
+            "
+            class="size-6 text-n-slate-10"
+          />
+          <span class="text-lg font-medium text-n-slate-12">
+            {{
+              isPermissionError
+                ? t('COOP_PRODUCERS.ERROR_STATE.PERMISSION.TITLE')
+                : t('COOP_PRODUCERS.ERROR_STATE.GENERIC.TITLE')
+            }}
+          </span>
+          <p class="max-w-md text-sm text-n-slate-11">
+            {{
+              isPermissionError
+                ? t('COOP_PRODUCERS.ERROR_STATE.PERMISSION.SUBTITLE')
+                : t('COOP_PRODUCERS.ERROR_STATE.GENERIC.SUBTITLE')
+            }}
+          </p>
+          <Button
+            v-if="!isPermissionError"
+            icon="i-lucide-refresh-cw"
+            variant="faded"
+            color="slate"
+            :label="t('COOP_PRODUCERS.ERROR_STATE.RETRY')"
+            @click="retryFetch"
+          />
         </div>
 
         <div

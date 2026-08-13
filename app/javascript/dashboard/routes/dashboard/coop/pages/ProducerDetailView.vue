@@ -30,6 +30,11 @@ const hasProducer = computed(() => Boolean(producer.value?.id));
 const showInitialLoadingState = computed(
   () => !hasProducer.value && isFetching.value
 );
+const fetchError = computed(() => producersStore.getFetchError);
+const isPermissionError = computed(() => fetchError.value === 'permission');
+const showFetchErrorState = computed(
+  () => !showInitialLoadingState.value && !!fetchError.value
+);
 
 const producerTypeLabel = computed(() =>
   producer.value?.producerType === 'company'
@@ -71,6 +76,10 @@ const handleProducerDeleted = () => {
 };
 
 const handleProducerSaved = () => {
+  producersStore.show(producerId.value);
+};
+
+const retryFetch = () => {
   producersStore.show(producerId.value);
 };
 
@@ -122,6 +131,40 @@ watch(
         >
           <Spinner />
           <span class="text-sm">{{ t('COOP_PRODUCERS.DETAIL.LOADING') }}</span>
+        </div>
+
+        <div
+          v-else-if="showFetchErrorState"
+          class="flex flex-col items-center justify-center gap-3 px-6 py-24 text-center rounded-2xl border border-n-weak bg-n-solid-2"
+        >
+          <Icon
+            :icon="
+              isPermissionError ? 'i-lucide-lock' : 'i-lucide-triangle-alert'
+            "
+            class="size-6 text-n-slate-10"
+          />
+          <span class="text-lg font-medium text-n-slate-12">
+            {{
+              isPermissionError
+                ? t('COOP_PRODUCERS.DETAIL.ERROR_STATE.PERMISSION.TITLE')
+                : t('COOP_PRODUCERS.DETAIL.ERROR_STATE.GENERIC.TITLE')
+            }}
+          </span>
+          <p class="max-w-md text-sm text-n-slate-11">
+            {{
+              isPermissionError
+                ? t('COOP_PRODUCERS.DETAIL.ERROR_STATE.PERMISSION.SUBTITLE')
+                : t('COOP_PRODUCERS.DETAIL.ERROR_STATE.GENERIC.SUBTITLE')
+            }}
+          </p>
+          <Button
+            v-if="!isPermissionError"
+            icon="i-lucide-refresh-cw"
+            variant="faded"
+            color="slate"
+            :label="t('COOP_PRODUCERS.DETAIL.ERROR_STATE.RETRY')"
+            @click="retryFetch"
+          />
         </div>
 
         <div

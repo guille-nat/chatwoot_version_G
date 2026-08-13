@@ -9,6 +9,17 @@
       "TITLE": "The Producers module is disabled",
       "SUBTITLE": "Ask an administrator to enable the Producers module for this cooperative."
     },
+    "ERROR_STATE": {
+      "PERMISSION": {
+        "TITLE": "You don't have access to Producers",
+        "SUBTITLE": "Ask an administrator to grant you access to the Producers module."
+      },
+      "GENERIC": {
+        "TITLE": "We couldn't load the producers",
+        "SUBTITLE": "Something went wrong while loading the list. Please try again."
+      },
+      "RETRY": "Try again"
+    },
     "LIST": {
       "TABLE_HEADER": {
         "BUSINESS_NAME": "Business name",
@@ -77,6 +88,17 @@
       "EMPTY_STATE": {
         "TITLE": "Producer not found",
         "SUBTITLE": "This producer may have been removed or is no longer available in this account."
+      },
+      "ERROR_STATE": {
+        "PERMISSION": {
+          "TITLE": "You don't have access to this producer",
+          "SUBTITLE": "Ask an administrator to grant you access to the Producers module."
+        },
+        "GENERIC": {
+          "TITLE": "We couldn't load this producer",
+          "SUBTITLE": "Something went wrong while loading the producer. Please try again."
+        },
+        "RETRY": "Try again"
       },
       "FIELDS": {
         "CREATED_AT": "Added"

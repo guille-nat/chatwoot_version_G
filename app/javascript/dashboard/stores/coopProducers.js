@@ -38,12 +38,25 @@ const throwProducerError = error => {
 const isModuleDisabledError = error =>
   error?.response?.data?.error_code === 'module_disabled';
 
+// Pundit's `render_unauthorized` (see request_exception_handler.rb) returns
+// a plain `{ error: message }` body with no `error_code`, so permission
+// failures can only be told apart from other read failures (500, network)
+// by status code.
+const isPermissionError = error => [401, 403].includes(error?.response?.status);
+
 export const useCoopProducersStore = createStore({
   name: 'coopProducers',
   type: 'pinia',
   API: ProducerAPI,
   state: () => ({
     moduleDisabled: false,
+    // null | 'permission' | 'server' -- read-only failure state for `get`
+    // and `show`. Read actions must never reject: both call sites (list
+    // page `onMounted`, detail page `watch`) fire them without a `.catch`,
+    // so surfacing the failure here (instead of rethrowing like the
+    // write actions below) avoids an unhandled promise rejection while
+    // still letting the pages render a distinct error state.
+    fetchError: null,
   }),
 
   getters: {
@@ -52,6 +65,7 @@ export const useCoopProducersStore = createStore({
         (a.businessName || '').localeCompare(b.businessName || '')
       ),
     isModuleDisabled: state => state.moduleDisabled,
+    getFetchError: state => state.fetchError,
   },
 
   actions: () => ({
@@ -63,14 +77,17 @@ export const useCoopProducersStore = createStore({
         } = await ProducerAPI.get();
         this.records = camelizeProducer(payload);
         this.moduleDisabled = false;
+        this.fetchError = null;
         return this.records;
       } catch (error) {
         if (isModuleDisabledError(error)) {
           this.records = [];
           this.moduleDisabled = true;
+          this.fetchError = null;
           return this.records;
         }
-        return throwProducerError(error);
+        this.fetchError = isPermissionError(error) ? 'permission' : 'server';
+        return this.records;
       } finally {
         this.setUIFlag({ fetchingList: false });
       }
@@ -87,13 +104,16 @@ export const useCoopProducersStore = createStore({
         if (index === -1) this.records.push(producer);
         else this.records[index] = producer;
         this.moduleDisabled = false;
+        this.fetchError = null;
         return producer;
       } catch (error) {
         if (isModuleDisabledError(error)) {
           this.moduleDisabled = true;
+          this.fetchError = null;
           return null;
         }
-        return throwProducerError(error);
+        this.fetchError = isPermissionError(error) ? 'permission' : 'server';
+        return null;
       } finally {
         this.setUIFlag({ fetchingItem: false });
       }
