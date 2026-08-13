@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_07_18_000000) do
+ActiveRecord::Schema[7.1].define(version: 2026_08_12_120100) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -446,8 +446,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_18_000000) do
     t.integer "status", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_captain_faq_suggestions_on_account_id"
     t.index ["account_id", "assistant_id", "status", "language"], name: "idx_cap_faq_suggestions_on_account_assistant_status_language"
+    t.index ["account_id"], name: "index_captain_faq_suggestions_on_account_id"
     t.index ["assistant_id"], name: "index_captain_faq_suggestions_on_assistant_id"
     t.index ["embedding"], name: "vector_idx_captain_faq_suggestions_embedding", opclass: :vector_cosine_ops, using: :ivfflat
   end
@@ -686,8 +686,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_18_000000) do
     t.jsonb "phone_number_health", default: {}, null: false
     t.datetime "phone_number_health_checked_at"
     t.string "phone_number_health_error", limit: 500
-    t.index ["phone_number_health_checked_at"], name: "index_channel_whatsapp_on_phone_number_health_checked_at"
     t.index ["phone_number"], name: "index_channel_whatsapp_on_phone_number", unique: true
+    t.index ["phone_number_health_checked_at"], name: "index_channel_whatsapp_on_phone_number_health_checked_at"
   end
 
   create_table "companies", force: :cascade do |t|
@@ -809,6 +809,201 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_18_000000) do
     t.index ["team_id"], name: "index_conversations_on_team_id"
     t.index ["uuid"], name: "index_conversations_on_uuid", unique: true
     t.index ["waiting_since"], name: "index_conversations_on_waiting_since"
+  end
+
+  create_table "coop_core_branches", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "name", null: false
+    t.string "code"
+    t.string "kind", default: "branch", null: false
+    t.string "address_line"
+    t.string "city"
+    t.string "province"
+    t.string "postal_code"
+    t.decimal "latitude", precision: 10, scale: 6
+    t.decimal "longitude", precision: 10, scale: 6
+    t.string "timezone", default: "America/Argentina/Buenos_Aires", null: false
+    t.boolean "active", default: true, null: false
+    t.jsonb "settings", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "account_id, lower((code)::text)", name: "index_coop_core_branches_on_account_id_and_lower_code", unique: true, where: "(code IS NOT NULL)"
+    t.index ["account_id", "active"], name: "index_coop_core_branches_on_account_id_and_active"
+  end
+
+  create_table "coop_core_cooperative_profiles", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "legal_name"
+    t.string "cuit", limit: 11
+    t.string "locale", default: "es-AR", null: false
+    t.string "timezone", default: "America/Argentina/Buenos_Aires", null: false
+    t.string "currency", default: "ARS", null: false
+    t.jsonb "branding", default: {}, null: false
+    t.jsonb "settings", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_coop_core_cooperative_profiles_on_account_id", unique: true
+  end
+
+  create_table "coop_core_crops", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.bigint "plot_id", null: false
+    t.string "species", null: false
+    t.string "variety"
+    t.string "campaign", null: false
+    t.date "sowing_date"
+    t.date "harvest_date"
+    t.decimal "hectares", precision: 12, scale: 2
+    t.decimal "expected_yield_kg_per_ha", precision: 12, scale: 2
+    t.string "status", default: "planned", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "campaign"], name: "index_coop_core_crops_on_account_id_and_campaign"
+    t.index ["account_id", "species"], name: "index_coop_core_crops_on_account_id_and_species"
+    t.index ["plot_id", "campaign"], name: "index_coop_core_crops_on_plot_id_and_campaign"
+  end
+
+  create_table "coop_core_event_subscriptions", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "url", null: false
+    t.string "secret", null: false
+    t.text "event_keys", default: [], null: false, array: true
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "active"], name: "index_coop_core_event_subscriptions_on_account_id_and_active"
+  end
+
+  create_table "coop_core_events", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "key", null: false
+    t.jsonb "payload", null: false
+    t.datetime "occurred_at", null: false
+    t.string "idempotency_key", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "idempotency_key"], name: "index_coop_core_events_on_account_id_and_idempotency_key", unique: true
+    t.index ["account_id", "key", "occurred_at"], name: "index_coop_core_events_on_account_id_and_key_and_occurred_at"
+  end
+
+  create_table "coop_core_fields", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.bigint "producer_id", null: false
+    t.bigint "branch_id"
+    t.string "name", null: false
+    t.decimal "total_hectares", precision: 12, scale: 2
+    t.string "province"
+    t.string "locality"
+    t.decimal "latitude", precision: 10, scale: 6
+    t.decimal "longitude", precision: 10, scale: 6
+    t.string "external_ref"
+    t.jsonb "custom_attributes", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "producer_id, lower((name)::text)", name: "index_coop_core_fields_on_producer_id_and_lower_name", unique: true
+    t.index ["account_id", "producer_id"], name: "index_coop_core_fields_on_account_id_and_producer_id"
+  end
+
+  create_table "coop_core_module_defaults", force: :cascade do |t|
+    t.string "module_key", null: false
+    t.boolean "enabled", default: false, null: false
+    t.integer "updated_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["module_key"], name: "index_coop_core_module_defaults_on_module_key", unique: true
+  end
+
+  create_table "coop_core_module_settings", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "module_key", null: false
+    t.string "scope_type", null: false
+    t.bigint "scope_id"
+    t.string "scope_key"
+    t.boolean "enabled", default: false, null: false
+    t.integer "updated_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "module_key", "scope_type", "scope_id"], name: "index_coop_core_module_settings_on_scope_id", unique: true, where: "(scope_id IS NOT NULL)"
+    t.index ["account_id", "module_key", "scope_type", "scope_key"], name: "index_coop_core_module_settings_on_scope_key", unique: true, where: "(scope_key IS NOT NULL)"
+    t.index ["account_id", "module_key"], name: "index_coop_core_module_settings_on_account_scope", unique: true, where: "((scope_type)::text = 'account'::text)"
+    t.index ["account_id"], name: "index_coop_core_module_settings_on_account_id"
+  end
+
+  create_table "coop_core_plots", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.bigint "field_id", null: false
+    t.string "name", null: false
+    t.decimal "hectares", precision: 12, scale: 2
+    t.jsonb "geometry"
+    t.string "soil_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index "field_id, lower((name)::text)", name: "index_coop_core_plots_on_field_id_and_lower_name", unique: true
+    t.index ["account_id", "field_id"], name: "index_coop_core_plots_on_account_id_and_field_id"
+  end
+
+  create_table "coop_core_producers", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.bigint "branch_id"
+    t.integer "contact_id"
+    t.string "cuit", limit: 11
+    t.string "business_name", null: false
+    t.string "trade_name"
+    t.string "producer_type", default: "individual", null: false
+    t.string "primary_phone"
+    t.string "email"
+    t.string "status", default: "active", null: false
+    t.string "external_ref"
+    t.jsonb "custom_attributes", default: {}, null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "contact_id"], name: "index_coop_core_producers_on_account_id_and_contact_id", unique: true, where: "(contact_id IS NOT NULL)"
+    t.index ["account_id", "cuit"], name: "index_coop_core_producers_on_account_id_and_cuit", unique: true, where: "(cuit IS NOT NULL)"
+    t.index ["account_id", "external_ref"], name: "index_coop_core_producers_on_account_id_and_external_ref", unique: true, where: "(external_ref IS NOT NULL)"
+    t.index ["account_id", "primary_phone"], name: "index_coop_core_producers_on_account_id_and_primary_phone"
+    t.index ["account_id", "status"], name: "index_coop_core_producers_on_account_id_and_status"
+    t.index ["branch_id"], name: "index_coop_core_producers_on_branch_id"
+  end
+
+  create_table "coop_core_staff_profiles", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.integer "user_id", null: false
+    t.bigint "default_branch_id"
+    t.text "beta_groups", default: [], null: false, array: true
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "user_id"], name: "index_coop_core_staff_profiles_on_account_id_and_user_id", unique: true
+    t.index ["beta_groups"], name: "index_coop_core_staff_profiles_on_beta_groups", using: :gin
+    t.index ["default_branch_id"], name: "index_coop_core_staff_profiles_on_default_branch_id"
+  end
+
+  create_table "coop_core_staff_role_assignments", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.bigint "staff_profile_id", null: false
+    t.bigint "staff_role_id", null: false
+    t.bigint "branch_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_coop_core_staff_role_assignments_on_account_id"
+    t.index ["branch_id"], name: "index_coop_core_staff_role_assignments_on_branch_id"
+    t.index ["staff_profile_id", "staff_role_id", "branch_id"], name: "index_coop_staff_role_assignments_on_profile_role_branch", unique: true, where: "(branch_id IS NOT NULL)"
+    t.index ["staff_profile_id", "staff_role_id"], name: "index_coop_staff_role_assignments_on_profile_role_no_branch", unique: true, where: "(branch_id IS NULL)"
+    t.index ["staff_role_id"], name: "index_coop_core_staff_role_assignments_on_staff_role_id"
+  end
+
+  create_table "coop_core_staff_roles", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.string "key", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.text "permissions", default: [], null: false, array: true
+    t.boolean "system", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "key"], name: "index_coop_core_staff_roles_on_account_id_and_key", unique: true
+    t.index ["permissions"], name: "index_coop_core_staff_roles_on_permissions", using: :gin
   end
 
   create_table "copilot_messages", force: :cascade do |t|
@@ -992,10 +1187,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_18_000000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "inbox_id"
-    t.index ["account_id", "name", "template_type", "locale"], name: "index_email_templates_on_account_scope", unique: true, where: "(account_id IS NOT NULL) AND (inbox_id IS NULL)"
+    t.index ["account_id", "name", "template_type", "locale"], name: "index_email_templates_on_account_scope", unique: true, where: "((account_id IS NOT NULL) AND (inbox_id IS NULL))"
     t.index ["inbox_id", "name", "template_type", "locale"], name: "index_email_templates_on_inbox_scope", unique: true, where: "(inbox_id IS NOT NULL)"
     t.index ["inbox_id"], name: "index_email_templates_on_inbox_id"
-    t.index ["name", "template_type", "locale"], name: "index_email_templates_on_installation_scope", unique: true, where: "(account_id IS NULL) AND (inbox_id IS NULL)"
+    t.index ["name", "template_type", "locale"], name: "index_email_templates_on_installation_scope", unique: true, where: "((account_id IS NULL) AND (inbox_id IS NULL))"
   end
 
   create_table "folders", force: :cascade do |t|
@@ -1500,6 +1695,31 @@ ActiveRecord::Schema[7.1].define(version: 2026_07_18_000000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "coop_core_branches", "accounts"
+  add_foreign_key "coop_core_cooperative_profiles", "accounts"
+  add_foreign_key "coop_core_crops", "accounts"
+  add_foreign_key "coop_core_crops", "coop_core_plots", column: "plot_id", on_delete: :cascade
+  add_foreign_key "coop_core_event_subscriptions", "accounts"
+  add_foreign_key "coop_core_events", "accounts"
+  add_foreign_key "coop_core_fields", "accounts"
+  add_foreign_key "coop_core_fields", "coop_core_branches", column: "branch_id", on_delete: :nullify
+  add_foreign_key "coop_core_fields", "coop_core_producers", column: "producer_id", on_delete: :cascade
+  add_foreign_key "coop_core_module_defaults", "users", column: "updated_by_id"
+  add_foreign_key "coop_core_module_settings", "accounts"
+  add_foreign_key "coop_core_module_settings", "users", column: "updated_by_id"
+  add_foreign_key "coop_core_plots", "accounts"
+  add_foreign_key "coop_core_plots", "coop_core_fields", column: "field_id", on_delete: :cascade
+  add_foreign_key "coop_core_producers", "accounts"
+  add_foreign_key "coop_core_producers", "contacts", on_delete: :nullify
+  add_foreign_key "coop_core_producers", "coop_core_branches", column: "branch_id", on_delete: :nullify
+  add_foreign_key "coop_core_staff_profiles", "accounts"
+  add_foreign_key "coop_core_staff_profiles", "coop_core_branches", column: "default_branch_id", on_delete: :nullify
+  add_foreign_key "coop_core_staff_profiles", "users", on_delete: :cascade
+  add_foreign_key "coop_core_staff_role_assignments", "accounts"
+  add_foreign_key "coop_core_staff_role_assignments", "coop_core_branches", column: "branch_id", on_delete: :cascade
+  add_foreign_key "coop_core_staff_role_assignments", "coop_core_staff_profiles", column: "staff_profile_id", on_delete: :cascade
+  add_foreign_key "coop_core_staff_role_assignments", "coop_core_staff_roles", column: "staff_role_id", on_delete: :cascade
+  add_foreign_key "coop_core_staff_roles", "accounts"
   add_foreign_key "inboxes", "portals"
   add_foreign_key "user_sessions", "users"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
