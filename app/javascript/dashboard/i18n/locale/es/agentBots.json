@@ -3,10 +3,10 @@
     "HEADER": "Bots",
     "LOADING_EDITOR": "Cargando el editor...",
     "DESCRIPTION": "Los bots de agentes son como los miembros más fabulosos de tu equipo. Ellos pueden manejar las cosas pequeñas, así que usted puede centrarse en las cosas que importan. Inténtalos. Puedes administrar tus bots desde esta página o crear nuevos usando el botón 'Configurar un nuevo bot'.",
-    "LEARN_MORE": "Learn about agent bots",
+    "LEARN_MORE": "Aprende sobre los bots de agentes",
     "COUNT": "{n} bot | {n} bots",
-    "SEARCH_PLACEHOLDER": "Search bots...",
-    "NO_RESULTS": "No bots found matching your search",
+    "SEARCH_PLACEHOLDER": "Buscar bots...",
+    "NO_RESULTS": "No se encontraron bots que coincidan con tu búsqueda",
     "GLOBAL_BOT": "Bot del sistema",
     "GLOBAL_BOT_BADGE": "Sistema",
     "AVATAR": {
@@ -64,14 +64,14 @@
       }
     },
     "SECRET": {
-      "LABEL": "Webhook Secret",
-      "COPY": "Copy secret to clipboard",
-      "COPY_SUCCESS": "Secret copied to clipboard",
-      "TOGGLE": "Toggle secret visibility",
-      "CREATED_DESC": "Use the secret below to verify webhook signatures. Please copy it now, you can also find it later in the bot settings.",
-      "DONE": "Done",
-      "RESET_SUCCESS": "Webhook secret regenerated successfully",
-      "RESET_ERROR": "Unable to regenerate webhook secret. Please try again"
+      "LABEL": "Secreto de Webhook",
+      "COPY": "Copiar secreto al portapapeles",
+      "COPY_SUCCESS": "Secreto copiado al portapapeles",
+      "TOGGLE": "Mostrar u ocultar el secreto",
+      "CREATED_DESC": "Usa el secreto a continuación para verificar las firmas del webhook. Por favor, cópialo ahora; también podrás encontrarlo más tarde en la configuración del bot.",
+      "DONE": "Listo",
+      "RESET_SUCCESS": "Secreto de Webhook regenerado correctamente",
+      "RESET_ERROR": "No se pudo regenerar el secreto del Webhook. Inténtalo de nuevo"
     },
     "ACCESS_TOKEN": {
       "TITLE": "Token de acceso",

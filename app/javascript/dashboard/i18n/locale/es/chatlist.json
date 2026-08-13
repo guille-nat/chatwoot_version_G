@@ -78,7 +78,10 @@
         "TEXT": "Respuesta pendiente: la más corta primero"
       },
       "priority_desc_created_at_asc": {
-        "TEXT": "Priority: Highest first, Created: Oldest first"
+        "TEXT": "Prioridad: Mayor primero, Creado: Más antiguo primero"
+      },
+      "unread": {
+        "TEXT": "No leídos: Mayor primero"
       }
     },
     "ATTACHMENTS": {

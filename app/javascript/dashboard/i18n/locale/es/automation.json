@@ -3,11 +3,11 @@
     "HEADER": "Automatización",
     "DESCRIPTION": "La automatización puede reemplazar y agilizar los procesos existentes que requieren esfuerzo manual, como añadir etiquetas y asignar conversaciones al agente más adecuado. Esto permite al equipo concentrarse en sus fortalezas, mientras que reduce el tiempo dedicado a las tareas de rutina.",
     "LEARN_MORE": "Aprende más sobre automatización",
-    "COUNT": "{n} automation | {n} automations",
-    "HEADER_BTN_TXT": "Create Automation",
+    "COUNT": "{n} automatización | {n} automatizaciones",
+    "HEADER_BTN_TXT": "Crear automatización",
     "LOADING": "Obteniendo reglas de automatización",
-    "SEARCH_PLACEHOLDER": "Search automation rules...",
-    "NO_RESULTS": "No automation rules found matching your search",
+    "SEARCH_PLACEHOLDER": "Buscar reglas de automatización...",
+    "NO_RESULTS": "No se encontraron reglas de automatización que coincidan con tu búsqueda",
     "ADD": {
       "TITLE": "Añadir regla de automatización",
       "SUBMIT": "Crear",
@@ -130,7 +130,7 @@
       "ATLEAST_ONE_ACTION_REQUIRED": "Se requiere al menos una acción"
     },
     "NONE_OPTION": "Ninguna",
-    "LAST_RESPONDING_AGENT": "Last Responding Agent",
+    "LAST_RESPONDING_AGENT": "Último agente que respondió",
     "EVENTS": {
       "CONVERSATION_CREATED": "Conversación creada",
       "CONVERSATION_UPDATED": "Conversación actualizada",
@@ -141,8 +141,8 @@
     "ACTIONS": {
       "ASSIGN_AGENT": "Asignar al agente",
       "ASSIGN_TEAM": "Asignar equipo",
-      "REMOVE_ASSIGNED_AGENT": "Remove Assigned Agent",
-      "REMOVE_ASSIGNED_TEAM": "Remove Assigned Team",
+      "REMOVE_ASSIGNED_AGENT": "Eliminar agente asignado",
+      "REMOVE_ASSIGNED_TEAM": "Eliminar equipo asignado",
       "ADD_LABEL": "Añadir etiqueta",
       "REMOVE_LABEL": "Eliminar etiqueta",
       "SEND_EMAIL_TO_TEAM": "Enviar un email al equipo",
