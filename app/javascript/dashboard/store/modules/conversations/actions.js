@@ -105,6 +105,33 @@ const actions = {
     }
   },
 
+  async fetchConversationHistory(
+    { commit, state },
+    { conversationId, beforeId }
+  ) {
+    try {
+      // Guard: conversation must already be in the store before we merge messages.
+      const exists = state.allConversations.some(c => c.id === conversationId);
+      if (!exists) return { has_more: false, next_before_id: null };
+
+      const { data: { payload, meta } = {} } = await ConversationApi.getHistory(
+        conversationId,
+        beforeId
+      );
+
+      if (payload && payload.length > 0) {
+        commit(types.SET_PREVIOUS_CONVERSATIONS, {
+          id: conversationId,
+          data: payload,
+        });
+      }
+
+      return meta || { has_more: false, next_before_id: null };
+    } catch {
+      return { has_more: false, next_before_id: null };
+    }
+  },
+
   fetchAllAttachments: async ({ commit }, conversationId) => {
     let attachments = [];
 

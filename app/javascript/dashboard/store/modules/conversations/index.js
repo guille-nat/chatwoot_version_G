@@ -81,10 +81,19 @@ export const mutations = {
   },
 
   [types.SET_PREVIOUS_CONVERSATIONS](_state, { id, data }) {
-    if (data.length) {
-      const [chat] = _state.allConversations.filter(c => c.id === id);
-      chat.messages.unshift(...data);
-    }
+    if (!data || data.length === 0) return;
+
+    const chat = _state.allConversations.find(c => c.id === id);
+    if (!chat || !chat.messages) return;
+
+    // Merge by id — idempotent: already-present messages are silently skipped.
+    const existingIds = new Set(chat.messages.map(m => m.id));
+    const incoming = data.filter(m => !existingIds.has(m.id));
+
+    if (incoming.length === 0) return;
+
+    // Merge and sort once for correct chronological order.
+    chat.messages = [...incoming, ...chat.messages].sort((a, b) => a.id - b.id);
   },
   [types.SET_ALL_ATTACHMENTS](_state, { id, data }) {
     _state.attachments[id] = [...data];

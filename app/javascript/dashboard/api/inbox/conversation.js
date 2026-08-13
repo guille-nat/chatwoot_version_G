@@ -140,6 +140,12 @@ class ConversationApi extends ApiClient {
   delete(conversationId) {
     return axios.delete(`${this.url}/${conversationId}`);
   }
+
+  getHistory(conversationId, beforeId) {
+    return axios.get(`${this.url}/${conversationId}/history`, {
+      params: { before_id: beforeId },
+    });
+  }
 }
 
 export default new ConversationApi();

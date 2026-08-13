@@ -84,6 +84,12 @@ export default {
       isProgrammaticScroll: false,
       messageSentSinceOpened: false,
       labelSuggestions: [],
+      // Sibling-conversation history state
+      isLoadingHistory: false,
+      hasMoreHistory: true,
+      historyCursor: null,
+      isRequestingHistory: false,
+      lastHistoryRequestTime: 0,
     };
   },
 
@@ -106,10 +112,15 @@ export default {
       );
     },
     inboxId() {
-      return this.currentChat.inbox_id;
+      return this.currentChat?.inbox_id;
     },
     inbox() {
+      if (!this.inboxId) return null;
       return this.$store.getters['inboxes/getInbox'](this.inboxId);
+    },
+    // Only enable cross-conversation history when the inbox permits it.
+    isHistoryEnabledByInbox() {
+      return this.inbox != null && !this.inbox.lock_to_single_conversation;
     },
     typingUsersList() {
       const userList = this.$store.getters[
@@ -251,6 +262,13 @@ export default {
       if (newChat.id === oldChat.id) {
         return;
       }
+      // Reset all history state to prevent cross-conversation contamination.
+      this.isLoadingHistory = false;
+      this.isRequestingHistory = false;
+      this.hasMoreHistory = true;
+      this.historyCursor = null;
+      this.lastHistoryRequestTime = 0;
+
       this.fetchAllAttachmentsFromCurrentChat();
       this.fetchSuggestions();
       this.messageSentSinceOpened = false;
@@ -343,7 +361,11 @@ export default {
       this.conversationPanel = this.$el.querySelector('.conversation-panel');
       this.setScrollParams();
       this.conversationPanel.addEventListener('scroll', this.handleScroll);
-      this.$nextTick(() => this.scrollToBottom());
+      this.$nextTick(() => {
+        this.scrollToBottom();
+        // After the initial render, auto-fill short conversations with history.
+        this.loadHistoryUntilScrollable();
+      });
       this.isLoadingPrevious = false;
     },
     removeScrollListener() {
@@ -388,33 +410,157 @@ export default {
     },
 
     async fetchPreviousMessages(scrollTop = 0) {
+      if (!this.currentChat?.id) return;
+
       this.setScrollParams();
+
+      const isSmallConversation =
+        this.currentChat.dataFetched === true &&
+        this.currentChat.messages?.length < 20;
+      const allCurrentMessagesLoaded =
+        this.listLoadingStatus || isSmallConversation;
+
       const shouldLoadMoreMessages =
         this.currentChat.dataFetched === true &&
         !this.listLoadingStatus &&
         !this.isLoadingPrevious;
 
-      if (
-        scrollTop < 100 &&
-        !this.isLoadingPrevious &&
-        shouldLoadMoreMessages
-      ) {
-        this.isLoadingPrevious = true;
-        try {
-          await this.$store.dispatch('fetchPreviousMessages', {
-            conversationId: this.currentChat.id,
-            before: this.currentChat.messages[0].id,
-          });
+      if (scrollTop < 100) {
+        if (!this.isLoadingPrevious && shouldLoadMoreMessages) {
+          // Load more messages from the current conversation.
+          this.isLoadingPrevious = true;
+          try {
+            await this.$store.dispatch('fetchPreviousMessages', {
+              conversationId: this.currentChat.id,
+              before: this.currentChat.messages[0]?.id,
+            });
+            const heightDifference =
+              this.conversationPanel.scrollHeight - this.heightBeforeLoad;
+            this.conversationPanel.scrollTop =
+              this.scrollTopBeforeLoad + heightDifference;
+            this.setScrollParams();
+          } catch (error) {
+            // Ignore Error
+          } finally {
+            this.isLoadingPrevious = false;
+          }
+        } else if (
+          this.isHistoryEnabledByInbox &&
+          allCurrentMessagesLoaded &&
+          this.hasMoreHistory &&
+          !this.isLoadingHistory &&
+          !this.isRequestingHistory
+        ) {
+          // All current messages loaded — load sibling-conversation history.
+          const now = Date.now();
+          if (now - this.lastHistoryRequestTime > 300) {
+            this.lastHistoryRequestTime = now;
+            await this.loadHistory();
+          }
+        }
+      }
+    },
+
+    async loadHistory() {
+      if (!this.currentChat?.id) return;
+      if (this.isLoadingHistory || this.isRequestingHistory) return;
+      if (!this.hasMoreHistory || !this.isHistoryEnabledByInbox) return;
+
+      this.isLoadingHistory = true;
+      this.isRequestingHistory = true;
+
+      const messageCountBefore = this.currentChat.messages?.length ?? 0;
+
+      // Snapshot scroll position and height before inserting new content.
+      this.setScrollParams();
+      const scrollTopBefore = this.conversationPanel?.scrollTop ?? 0;
+
+      // Allow the spinner to render before the network request.
+      await new Promise(resolve => {
+        this.$nextTick(resolve);
+      });
+      await new Promise(resolve => {
+        setTimeout(resolve, 300);
+      });
+
+      try {
+        const oldestMessageId = this.currentChat.messages[0]?.id;
+        const beforeId = this.historyCursor || oldestMessageId;
+
+        if (!beforeId) {
+          this.hasMoreHistory = false;
+          return;
+        }
+
+        const meta = await this.$store.dispatch('fetchConversationHistory', {
+          conversationId: this.currentChat.id,
+          beforeId,
+        });
+
+        // Only continue if messages actually landed in the store.
+        const messageCountAfter = this.currentChat.messages?.length ?? 0;
+        if (messageCountAfter <= messageCountBefore) {
+          this.hasMoreHistory = false;
+          return;
+        }
+
+        if (meta?.next_before_id != null) {
+          this.historyCursor = meta.next_before_id;
+        }
+        this.hasMoreHistory = meta?.has_more ?? false;
+      } finally {
+        this.isLoadingHistory = false;
+        this.isRequestingHistory = false;
+
+        // Scroll stitching: keep the visible content stable.
+        this.$nextTick(() => {
+          if (!this.conversationPanel) return;
           const heightDifference =
             this.conversationPanel.scrollHeight - this.heightBeforeLoad;
-          this.conversationPanel.scrollTop =
-            this.scrollTopBeforeLoad + heightDifference;
-          this.setScrollParams();
-        } catch (error) {
-          // Ignore Error
-        } finally {
-          this.isLoadingPrevious = false;
-        }
+          if (heightDifference > 0) {
+            this.isProgrammaticScroll = true;
+            this.conversationPanel.scrollTop =
+              scrollTopBefore + heightDifference;
+          }
+
+          // Auto-load next page if the user is still at the top and content is still short.
+          setTimeout(() => {
+            if (
+              this.conversationPanel &&
+              this.conversationPanel.scrollTop < 100 &&
+              this.hasMoreHistory &&
+              !this.isLoadingHistory &&
+              !this.isRequestingHistory &&
+              this.conversationPanel.scrollHeight <=
+                this.conversationPanel.clientHeight
+            ) {
+              this.loadHistory();
+            }
+          }, 150);
+        });
+      }
+    },
+
+    loadHistoryUntilScrollable() {
+      const container = this.conversationPanel;
+      if (!container || !this.isHistoryEnabledByInbox) return;
+
+      const scrollHeightBefore = container.scrollHeight;
+
+      if (
+        this.hasMoreHistory &&
+        !this.isLoadingHistory &&
+        !this.isRequestingHistory &&
+        container.scrollHeight <= container.clientHeight
+      ) {
+        this.loadHistory().then(() => {
+          this.$nextTick(() => {
+            const scrollHeightAfter = container.scrollHeight;
+            if (scrollHeightAfter > scrollHeightBefore && this.hasMoreHistory) {
+              this.loadHistoryUntilScrollable();
+            }
+          });
+        });
       }
     },
 
@@ -480,14 +626,46 @@ export default {
       @retry="handleMessageRetry"
     >
       <template #beforeAll>
-        <transition name="slide-up">
-          <!-- eslint-disable-next-line vue/require-toggle-inside-transition -->
-          <li
-            class="min-h-[4rem] flex flex-shrink-0 flex-grow-0 items-center flex-auto justify-center max-w-full mt-0 mr-0 mb-1 ml-0 relative first:mt-auto last:mb-0"
+        <li
+          class="list-none flex flex-col items-center justify-center w-full min-h-[4rem] first:mt-auto"
+        >
+          <!-- Spinner for current conversation loading -->
+          <div
+            v-if="shouldShowSpinner"
+            class="flex items-center justify-center py-4"
           >
-            <Spinner v-if="shouldShowSpinner" class="text-n-brand" />
-          </li>
-        </transition>
+            <Spinner class="text-n-brand" />
+          </div>
+
+          <!-- Spinner for sibling-conversation history loading -->
+          <div
+            v-else-if="isLoadingHistory && isHistoryEnabledByInbox"
+            class="flex flex-col items-center gap-2 py-4 w-full"
+          >
+            <div
+              class="inline-flex items-center gap-3 px-4 py-2 bg-n-alpha-1 dark:bg-n-alpha-2 rounded-full border border-n-weak"
+            >
+              <Spinner class="text-n-brand" />
+              <span class="text-n-slate-11 text-xs font-medium">
+                {{ $t('CONVERSATION.LOADING_HISTORY') }}
+              </span>
+            </div>
+          </div>
+
+          <!-- "Start of history" indicator when all history is loaded -->
+          <div
+            v-else-if="
+              listLoadingStatus && !hasMoreHistory && isHistoryEnabledByInbox
+            "
+            class="flex items-center justify-center py-4"
+          >
+            <span
+              class="text-[10px] text-n-slate-10 uppercase tracking-widest px-4 py-1.5 bg-n-alpha-1 dark:bg-n-alpha-2 rounded-full border border-n-weak"
+            >
+              {{ $t('CONVERSATION.HISTORY_START') }}
+            </span>
+          </div>
+        </li>
       </template>
       <template #unreadBadge>
         <li
