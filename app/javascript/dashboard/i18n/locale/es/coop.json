@@ -33,6 +33,12 @@
     "DEPENDENCY": {
       "REQUIRES": "Requiere {moduleNames}"
     },
+    "CASCADE_DIALOG": {
+      "TITLE": "Esto también va a apagar otros módulos",
+      "DESCRIPTION": "Si apagás {moduleName}, también se van a apagar {dependentNames}, porque lo necesitan para funcionar.",
+      "CONFIRM": "Apagar igual",
+      "CANCEL": "Cancelar"
+    },
     "TOGGLE": {
       "NOT_APPLIED_DEPENDENCY": "{moduleName} sigue apagado: activá primero {blockingNames}.",
       "NOT_APPLIED_GENERIC": "No se pudo activar {moduleName}. Puede estar deshabilitado por una configuración de mayor prioridad.",

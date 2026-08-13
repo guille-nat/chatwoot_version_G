@@ -1,13 +1,13 @@
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { useAlert } from 'dashboard/composables';
 import BaseSettingsHeader from '../components/BaseSettingsHeader.vue';
 import SettingsLayout from '../SettingsLayout.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
+import Dialog from 'dashboard/components-next/dialog/Dialog.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
-import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 import { BaseTable } from 'dashboard/components-next/table';
 import CoopModuleRow from 'dashboard/components-next/Coop/Modules/CoopModuleRow.vue';
 import { useCoopModulesStore } from 'dashboard/stores/coopModules';
@@ -74,7 +74,7 @@ const explainMismatch = (key, requested, resolved) => {
   });
 };
 
-const handleToggle = async ({ key, enabled }) => {
+const submitToggle = async ({ key, enabled }) => {
   try {
     const { requested, resolved } = await coopModulesStore.toggle(key, enabled);
     const explanation = explainMismatch(key, requested, resolved);
@@ -86,6 +86,53 @@ const handleToggle = async ({ key, enabled }) => {
         : t('COOP_MODULES.TOGGLE.ERROR')
     );
   }
+};
+
+// Inverse of `blockingModuleNames`: modules whose `dependsOn` lists `key`
+// AND are currently enabled. Disabling `key` would cascade these off
+// server-side (the resolver re-evaluates every module on each PATCH), so
+// the admin gets a chance to back out before that happens.
+const enabledDependentNames = key =>
+  modules.value
+    .filter(
+      coopModule =>
+        coopModule.enabled && (coopModule.dependsOn || []).includes(key)
+    )
+    .map(coopModule => coopModule.name || coopModule.key);
+
+const cascadeDialogRef = ref(null);
+// { key, enabled, dependentNames } for the toggle awaiting confirmation, or
+// null when no cascade dialog is open.
+const pendingCascadeToggle = ref(null);
+
+const handleToggle = ({ key, enabled }) => {
+  const dependentNames = enabled ? [] : enabledDependentNames(key);
+
+  // Only a disable with currently-enabled dependents needs confirmation --
+  // enabling never cascades anything off.
+  if (!dependentNames.length) {
+    submitToggle({ key, enabled });
+    return;
+  }
+
+  pendingCascadeToggle.value = { key, enabled, dependentNames };
+  cascadeDialogRef.value?.open();
+};
+
+// The switch's v-model never owns local state (see CoopModuleRow.vue) --
+// it always re-renders from `coopModule.enabled` in the store. Cancelling
+// here simply never calls `submitToggle`, so no PATCH is ever sent and the
+// row keeps showing the store's last known truth; there is nothing to
+// revert.
+const cancelCascadeToggle = () => {
+  pendingCascadeToggle.value = null;
+};
+
+const confirmCascadeToggle = () => {
+  const toggle = pendingCascadeToggle.value;
+  cascadeDialogRef.value?.close();
+  pendingCascadeToggle.value = null;
+  if (toggle) submitToggle(toggle);
 };
 
 onMounted(() => {
@@ -139,14 +186,6 @@ onMounted(() => {
         />
       </div>
 
-      <div
-        v-else-if="isFetchingList && !modules.length"
-        class="flex flex-col items-center justify-center gap-3 py-24 text-n-slate-11"
-      >
-        <Spinner />
-        <span class="text-sm">{{ t('COOP_MODULES.LOADING') }}</span>
-      </div>
-
       <BaseTable v-else :headers="tableHeaders" :items="modules">
         <template #row="{ items }">
           <CoopModuleRow
@@ -160,5 +199,25 @@ onMounted(() => {
         </template>
       </BaseTable>
     </template>
+
+    <Dialog
+      ref="cascadeDialogRef"
+      type="alert"
+      :title="t('COOP_MODULES.CASCADE_DIALOG.TITLE')"
+      :description="
+        t('COOP_MODULES.CASCADE_DIALOG.DESCRIPTION', {
+          moduleName:
+            moduleByKey[pendingCascadeToggle?.key]?.name ||
+            pendingCascadeToggle?.key,
+          dependentNames: (pendingCascadeToggle?.dependentNames || []).join(
+            ', '
+          ),
+        })
+      "
+      :confirm-button-label="t('COOP_MODULES.CASCADE_DIALOG.CONFIRM')"
+      :cancel-button-label="t('COOP_MODULES.CASCADE_DIALOG.CANCEL')"
+      @confirm="confirmCascadeToggle"
+      @close="cancelCascadeToggle"
+    />
   </SettingsLayout>
 </template>

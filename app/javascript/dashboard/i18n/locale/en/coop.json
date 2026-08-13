@@ -33,6 +33,12 @@
     "DEPENDENCY": {
       "REQUIRES": "Requires {moduleNames}"
     },
+    "CASCADE_DIALOG": {
+      "TITLE": "This will also turn off other modules",
+      "DESCRIPTION": "Turning off {moduleName} will also turn off {dependentNames}, because they need it to work.",
+      "CONFIRM": "Turn off anyway",
+      "CANCEL": "Cancel"
+    },
     "TOGGLE": {
       "NOT_APPLIED_DEPENDENCY": "{moduleName} is still off: enable {blockingNames} first.",
       "NOT_APPLIED_GENERIC": "{moduleName} could not be turned on. It may be disabled by a higher-priority setting.",
