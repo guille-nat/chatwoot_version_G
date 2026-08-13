@@ -58,14 +58,17 @@
         "ERROR_MESSAGE": "Se produjo un error al conectar con Instagram. Por favor, inténtalo de nuevo",
         "ERROR_AUTH": "Se produjo un error al conectar con Instagram. Por favor, inténtalo de nuevo",
         "NEW_INBOX_SUGGESTION": "Esta cuenta de Instagram estaba vinculada anteriormente a una bandeja de entrada diferente y ahora ha sido migrada aquí. Todos los mensajes nuevos aparecerán aquí. La bandeja de entrada anterior ya no podrá enviar ni recibir mensajes para esta cuenta.",
-        "DUPLICATE_INBOX_BANNER": "Esta cuenta de Instagram fue migrada a la nueva bandeja de entrada del canal de Instagram. Ya no podrás enviar ni recibir mensajes de Instagram desde esta bandeja de entrada."
+        "DUPLICATE_INBOX_BANNER": "Esta cuenta de Instagram fue migrada a la nueva bandeja de entrada del canal de Instagram. Ya no podrás enviar ni recibir mensajes de Instagram desde esta bandeja de entrada.",
+        "SETTINGS_RESTRICTED_WARNING": "Instagram está restringido. Algunos mensajes o acciones pueden retrasarse o no estar disponibles mientras restauramos el soporte completo.",
+        "STATUS_LINK": "Ver actualización de estado"
       },
       "TIKTOK": {
         "CONTINUE_WITH_TIKTOK": "Continuar con TikTok",
         "CONNECT_YOUR_TIKTOK_PROFILE": "Conecta tu perfil de TikTok",
         "HELP": "Para añadir tu perfil de TikTok como canal, debes autenticar tu perfil de TikTok haciendo clic en 'Continuar con TikTok' ",
         "ERROR_MESSAGE": "Se produjo un error al conectar con TikTok. Por favor, inténtalo de nuevo",
-        "ERROR_AUTH": "Se produjo un error al conectar con TikTok. Por favor, inténtalo de nuevo"
+        "ERROR_AUTH": "Se produjo un error al conectar con TikTok. Por favor, inténtalo de nuevo",
+        "NORTH_AMERICA_WARNING": "Las conexiones de TikTok para cuentas norteamericanas no están disponibles temporalmente mientras esperamos una actualización del equipo de TikTok."
       },
       "TWITTER": {
         "HELP": "Para añadir tu perfil de Twitter como un canal, necesitas autenticar tu perfil de Twitter haciendo clic en 'Iniciar sesión con Twitter' ",
@@ -468,7 +471,7 @@
             "DESCRIPTION": "Atiende a tus clientes en WhatsApp"
           },
           "WHATSAPP_CALL": {
-            "TITLE": "WhatsApp Call",
+            "TITLE": "Llamada de WhatsApp",
             "DESCRIPTION": "Recibe llamadas de voz en tu número de WhatsApp"
           },
           "EMAIL": {
@@ -814,6 +817,15 @@
       "WHATSAPP_EMBEDDED_SIGNUP_SUBHEADER": "Esta bandeja de entrada está conectada mediante el registro integrado de WhatsApp.",
       "WHATSAPP_EMBEDDED_SIGNUP_DESCRIPTION": "Puedes reconfigurar esta bandeja de entrada para actualizar la configuración de WhatsApp Business.",
       "WHATSAPP_RECONFIGURE_BUTTON": "Reconfigurar",
+      "WHATSAPP_MANUAL_TRANSFER_TITLE": "Cambiar a Configuración Manual",
+      "WHATSAPP_MANUAL_TRANSFER_SUBHEADER": "Esta bandeja de entrada fue conectada a través del registro incrustado de WhatsApp, que ya no es compatible. Introduzca las credenciales API de WhatsApp Cloud de su propia aplicación Meta, para cambiar esta bandeja de entrada a una configuración manual. Configure el webhook en su aplicación Meta, utilizando el token de verificación de arriba antes de cambiar.",
+      "WHATSAPP_MANUAL_TRANSFER_PHONE_NUMBER_ID_LABEL": "ID de número de teléfono",
+      "WHATSAPP_MANUAL_TRANSFER_BUSINESS_ACCOUNT_ID_LABEL": "ID de cuenta de negocio",
+      "WHATSAPP_MANUAL_TRANSFER_API_KEY_LABEL": "Clave de API",
+      "WHATSAPP_MANUAL_TRANSFER_API_KEY_PLACEHOLDER": "Introduzca un token de acceso permanente desde su aplicación Meta",
+      "WHATSAPP_MANUAL_TRANSFER_BUTTON": "Cambiar a Configuración Manual",
+      "WHATSAPP_MANUAL_TRANSFER_SUCCESS": "La bandeja de entrada cambió a la configuración manual con éxito.",
+      "WHATSAPP_MANUAL_TRANSFER_ERROR": "No se pudo cambiar a la configuración manual. Por favor, compruebe las credenciales e inténtelo de nuevo.",
       "WHATSAPP_CONNECT_TITLE": "Conectar a WhatsApp Business",
       "WHATSAPP_CONNECT_SUBHEADER": "Cambia al registro integrado de WhatsApp para una gestión más sencilla.",
       "WHATSAPP_CONNECT_DESCRIPTION": "Conecta esta bandeja de entrada a WhatsApp Business para obtener funciones mejoradas y una gestión más fácil.",
@@ -831,6 +843,70 @@
       "WHATSAPP_TEMPLATES_SYNC_SUBHEADER": "Sincroniza manualmente las plantillas de mensajes de WhatsApp para actualizar las plantillas disponibles.",
       "WHATSAPP_TEMPLATES_SYNC_BUTTON": "Sincronizar plantillas",
       "WHATSAPP_TEMPLATES_SYNC_SUCCESS": "Sincronización de plantillas iniciada correctamente. Puede tardar un par de minutos en actualizarse.",
+      "WHATSAPP_MANUAL_MIGRATION": {
+        "BANNER": {
+          "TITLE": "Configuración manual recomendada",
+          "DESCRIPTION": "Esta bandeja de entrada se conecta a través de la aplicación Meta compartida utilizada para el registro incrustado, que las recientes restricciones Meta han afectado. Para evitar problemas similares en el futuro, recomendamos volver a conectarlo con tu propia aplicación Meta.",
+          "START": "Iniciar migración manual",
+          "GUIDE": "Ver guía"
+        },
+        "DIALOG": {
+          "EYEBROW": "Migración manual de WhatsApp",
+          "TITLE": "Volver a conectar la bandeja de entrada de WhatsApp",
+          "CLOSE": "Cerrar",
+          "ACTION_REQUIRED_TITLE": "Volver a conectar con tu propia aplicación Meta",
+          "ACTION_REQUIRED_DESCRIPTION": "Las bandejas conectadas a través de tu propia aplicación Meta, no se ven afectadas por restricciones en la aplicación de registro compartida. Este flujo guiado actualiza la conexión API de WhatsApp sin crear una nueva bandeja de entrada.",
+          "GUIDE_LINK": "Abrir la guía de configuración manual",
+          "PRESERVED_TITLE": "Preservado",
+          "PRESERVED_DESCRIPTION": "Conversaciones, contactos, colaboradores, enrutamiento, horas de trabajo y ajustes de bandeja de entrada.",
+          "UPDATED_TITLE": "Actualizado",
+          "UPDATED_DESCRIPTION": "WABA ID, número de teléfono ID, token de acceso y configuración de webhook.",
+          "WABA_ID": "WABA ID",
+          "WABA_PLACEHOLDER": "Introduzca ID de WABA",
+          "WABA_HELP": "La cuenta de negocios de WhatsApp que posee este número de teléfono.",
+          "PHONE_NUMBER_ID": "ID de número de teléfono",
+          "PHONE_NUMBER_PLACEHOLDER": "Ingrese el ID del número de teléfono",
+          "PHONE_NUMBER_HELP": "ID único de Meta para el número de WhatsApp conectado a esta bandeja de entrada.",
+          "DISPLAY_PHONE_NUMBER": "Número de teléfono visible",
+          "DISPLAY_PHONE_NUMBER_PLACEHOLDER": "Ingrese el número de teléfono visible",
+          "DISPLAY_PHONE_NUMBER_HELP": "El número WhatsApp orientado al cliente. Esto no se puede cambiar durante la migración.",
+          "ACCESS_TOKEN": "Token de acceso permanente o token de usuario del sistema",
+          "ACCESS_TOKEN_PLACEHOLDER": "Pegar token de acceso",
+          "TOKEN_HELP_PREFIX": "El token debe incluir",
+          "TOKEN_HELP_MIDDLE": "Añadir",
+          "TOKEN_HELP_SUFFIX": "para sincronización de plantillas y gestión de plantillas.",
+          "MESSAGING_PERMISSION": "whatsapp_business_messaging.",
+          "MANAGEMENT_PERMISSION": "whatsapp_business_management",
+          "REVIEW_TITLE": "Revisar antes de volver a conectar",
+          "INBOX": "Bandeja de entrada",
+          "PHONE_NUMBER": "Número de teléfono",
+          "NOT_ENTERED": "No ingresado",
+          "VERIFY_NOTICE": "Chatwoot verificará estas credenciales con Meta antes de aplicar cualquier cambio. Si la verificación falla, la configuración actual se deja sin tocar.",
+          "BACK": "Atrás",
+          "CANCEL": "Cancelar",
+          "CONTINUE": "Continuar",
+          "REVIEW_MIGRATION": "Revisar migración",
+          "RECONNECT": "Volver a conectar la bandeja de entrada de WhatsApp"
+        },
+        "STEPS": {
+          "BEFORE_YOU_START": {
+            "TITLE": "Antes de empezar",
+            "DESCRIPTION": "Esto vuelve a conectar los detalles de la API de WhatsApp para esta bandeja de entrada. Se conservarán las conversaciones, colaboradores, enrutamiento, horas laborables, CSAT y configuración del bot."
+          },
+          "BUSINESS_DETAILS": {
+            "TITLE": "Detalles del negocio",
+            "DESCRIPTION": "Introduzca los activos de WhatsApp de la cuenta de cliente Meta Business."
+          },
+          "ACCESS_TOKEN": {
+            "TITLE": "Token de acceso",
+            "DESCRIPTION": "Pegue un token de acceso permanente o un token de usuario del sistema con permisos de WhatsApp."
+          },
+          "REVIEW_MIGRATION": {
+            "TITLE": "Revisar migración",
+            "DESCRIPTION": "Confirme los detalles de conexión antes de volver a conectar esta bandeja de entrada. Chatwoot verificará el token, WABA y el número de teléfono con Meta antes de aplicar los cambios."
+          }
+        }
+      },
       "WHATSAPP_CALLING_ENABLED": {
         "LABEL": "Habilitar llamadas de voz",
         "DESCRIPTION": "Permite que los agentes inicien y reciban llamadas de voz de WhatsApp en esta bandeja de entrada. Solo disponible en canales de WhatsApp Cloud configurados mediante registro integrado con permiso de llamadas otorgado por Meta."

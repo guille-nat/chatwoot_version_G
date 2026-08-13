@@ -31,6 +31,13 @@
     "WEBHOOK": {
       "SUBSCRIBED_EVENTS": "Eventos suscritos",
       "LEARN_MORE": "Aprenda más sobre webhooks",
+      "PAYWALL": {
+        "TITLE": "Los webhooks están disponibles en planes de pago",
+        "AVAILABLE_ON": "Usa webhooks para recibir eventos en tiempo real de tu cuenta de Chatwoot.",
+        "UPGRADE_PROMPT": "Actualice a Startups, Business, o Enterprise planea usar webhooks.",
+        "UPGRADE_NOW": "Actualizar ahora",
+        "CANCEL_ANYTIME": "Cambie o cancele su plan en cualquier momento."
+      },
       "SECRET": {
         "LABEL": "Secreto",
         "COPY": "Copiar secreto al portapapeles",
@@ -392,6 +399,82 @@
   "CAPTAIN": {
     "NAME": "Capitán",
     "HEADER_KNOW_MORE": "Más información",
+    "OVERVIEW": {
+      "HEADER": "Resumen",
+      "WELCOME": {
+        "LABEL": "Resumen del capitán",
+        "LOADING": "Generando resumen…"
+      },
+      "INBOX_BANNER": {
+        "TEXT": "Este asistente aún no está conectado a ninguna bandeja de entrada, por lo que no responderá a las conversaciones.",
+        "ACTION": "Conectar bandeja de entrada",
+        "DISMISS": "Descartar"
+      },
+      "COVERAGE_BANNER": {
+        "TEXT": "Las Preguntas Frecuentes {count} están pendientes de revisión, manteniendo la cobertura en {coverage}%. Aprovéchalas para que tu asistente pueda resolver más por sí solo.",
+        "ACTION": "Revisar FAQs",
+        "DISMISS": "Descartar"
+      },
+      "RANGES": {
+        "LAST_DAYS": "Últimos {count} días",
+        "THIS_MONTH": "This month",
+        "LAST_MONTH": "Last month"
+      },
+      "METRICS": {
+        "HANDLED": {
+          "LABEL": "Conversaciones manejadas",
+          "HINT": "Distintas conversaciones en las que respondió este asistente."
+        },
+        "AUTO_RESOLUTION": {
+          "LABEL": "Tasa de resolución automática",
+          "HINT": "Compartido de conversaciones manejadas cerradas sin una respuesta humana."
+        },
+        "HANDOFF": {
+          "LABEL": "Tasa de desconexión",
+          "HINT": "Comparte las conversaciones manipuladas escaladas a un agente humano."
+        },
+        "HOURS_SAVED": {
+          "LABEL": "Tiempo ahorrado",
+          "HINT": "Estimado: El Capitán responde veces ~2 minutos de esfuerzo de agente asumido por respuesta. Trabajo direccional, no medido."
+        },
+        "REOPEN": {
+          "LABEL": "Reabrir tasa",
+          "HINT": "Conversaciones resueltas automáticamente que se reabrieron después."
+        },
+        "DEPTH": {
+          "LABEL": "Mensajes / conversación",
+          "HINT": "Promedio de respuestas que el asistente envía por conversación."
+        }
+      },
+      "DRILLDOWN": {
+        "CLOSE": "Detalles de cierre",
+        "EMPTY": "No se encontraron registros para esta métrica.",
+        "ERROR": "No se pudo cargar los registros. Por favor, inténtelo de nuevo.",
+        "LOAD_MORE": "Cargar más",
+        "RESULT_COUNT_CONVERSATION": "Conversación {count} | Conversaciones {count}"
+      },
+      "KNOWLEDGE": {
+        "TITLE": "Cobertura del conocimiento",
+        "COVERAGE": "{pct}% aprobado",
+        "APPROVED": "FAQs Aprobadas",
+        "PENDING": "Pending FAQs",
+        "DOCUMENTS": "Documents"
+      },
+      "LINKS": {
+        "DOCS": {
+          "TITLE": "Capitán documentos",
+          "DESCRIPTION": "Guías y cómo para el Capitán"
+        },
+        "PLAYGROUND": {
+          "TITLE": "Zona de pruebas",
+          "DESCRIPTION": "Probar las respuestas de este asistente"
+        },
+        "BILLING": {
+          "TITLE": "Facturación",
+          "DESCRIPTION": "Gestionar créditos y plan"
+        }
+      }
+    },
     "ASSISTANT_SWITCHER": {
       "ASSISTANTS": "Asistentes",
       "SWITCH_ASSISTANT": "Cambiar entre asistentes",
@@ -493,10 +576,6 @@
           "LABEL": "Nombre",
           "PLACEHOLDER": "Ingresa el nombre del asistente",
           "ERROR": "El nombre es obligatorio"
-        },
-        "TEMPERATURE": {
-          "LABEL": "Temperatura de respuesta",
-          "DESCRIPTION": "Ajusta qué tan creativas o restrictivas deben ser las respuestas del asistente. Los valores más bajos producen respuestas más enfocadas y deterministas, mientras que los valores más altos permiten resultados más creativos y variados."
         },
         "DESCRIPTION": {
           "LABEL": "Descripción",
@@ -739,6 +818,7 @@
     "DOCUMENTS": {
       "HEADER": "Documentos",
       "ADD_NEW": "Crear un nuevo documento",
+      "FAQ_COUNT": "Preguntas frecuentes {n} | Preguntas frecuentes {n}",
       "SELECTED": "{count} seleccionado",
       "SELECT_ALL": "Seleccionar todos ({count})",
       "UNSELECT_ALL": "Deseleccionar todos ({count})",
@@ -798,7 +878,27 @@
       },
       "RELATED_RESPONSES": {
         "TITLE": "Preguntas frecuentes relacionadas",
-        "DESCRIPTION": "Estas preguntas frecuentes se generan directamente desde el documento."
+        "EMPTY": "Aún no se han generado FAQs de este documento."
+      },
+      "DETAILS": {
+        "DESCRIPTION": "Revise el contenido acumulado y las preguntas frecuentes generadas a partir de esta fuente.",
+        "SOURCE": "Fuente",
+        "GENERATED_FAQS": "FAQs generadas",
+        "LAST_UPDATED": "Última actualización",
+        "NOT_AVAILABLE": "No disponible",
+        "CONTENT_TAB": "Contenido arrastrado",
+        "PDF_TAB": "Detalles PDF",
+        "CONTENT_TITLE": "Contenido arrastrado",
+        "PDF_TITLE": "Archivo PDF",
+        "PDF_DESCRIPTION": "Revise la fuente PDF original.",
+        "CHARACTER_COUNT": "{count} caracteres extraídos",
+        "COPY_CONTENT": "Copiar",
+        "COPY_SUCCESS": "Contenido arrastrado copiado al portapapeles",
+        "COPY_ERROR": "No se pudo copiar el contenido",
+        "VIEW_RAW": "Ver crudo",
+        "VIEW_PREVIEW": "Ver vista previa",
+        "UNREADABLE_CONTENT": "El contenido legible no se pudo extraer de este documento. Puede ver el contenido extraído en bruto.",
+        "EMPTY_CONTENT": "Aún no hay contenido grabado disponible para este documento."
       },
       "FORM_DESCRIPTION": "Ingresa la URL del documento para agregarlo como fuente de conocimiento y elige el asistente con el que asociarlo.",
       "CREATE": {
@@ -838,7 +938,7 @@
         "ERROR_MESSAGE": "Hubo un error al eliminar el documento. Inténtalo de nuevo."
       },
       "OPTIONS": {
-        "VIEW_RELATED_RESPONSES": "Ver respuestas relacionadas",
+        "VIEW_DETAILS": "Ver detalles",
         "SYNC_NOW": "Actualizar ahora",
         "RETRY_SYNC": "Reintentar actualización",
         "DELETE_DOCUMENT": "Eliminar documento"
