@@ -35,7 +35,6 @@ import search from './search.json';
 import setNewPassword from './setNewPassword.json';
 import sessionLimit from './sessionLimit.json';
 import settings from './settings.json';
-import sessionLimit from './sessionLimit.json';
 import signup from './signup.json';
 import sla from './sla.json';
 import teamsSettings from './teamsSettings.json';
@@ -79,7 +78,6 @@ export default {
   ...setNewPassword,
   ...sessionLimit,
   ...settings,
-  ...sessionLimit,
   ...signup,
   ...sla,
   ...teamsSettings,
