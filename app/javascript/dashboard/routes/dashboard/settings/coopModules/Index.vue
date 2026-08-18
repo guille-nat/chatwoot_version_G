@@ -124,14 +124,22 @@ const handleToggle = ({ key, enabled }) => {
 // here simply never calls `submitToggle`, so no PATCH is ever sent and the
 // row keeps showing the store's last known truth; there is nothing to
 // revert.
+//
+// Dialog.close() unconditionally emits 'close' before closing (see
+// Dialog.vue), so this handler also fires when `confirmCascadeToggle`
+// closes the dialog after a confirm. `confirmCascadeToggle` nulls
+// `pendingCascadeToggle` *before* calling `close()`, so by the time this
+// runs after a confirm it is an explicit, documented no-op -- it only has
+// a real effect on ESC/backdrop/cancel-button dismissal, where
+// `pendingCascadeToggle` is still set.
 const cancelCascadeToggle = () => {
   pendingCascadeToggle.value = null;
 };
 
 const confirmCascadeToggle = () => {
   const toggle = pendingCascadeToggle.value;
-  cascadeDialogRef.value?.close();
   pendingCascadeToggle.value = null;
+  cascadeDialogRef.value?.close();
   if (toggle) submitToggle(toggle);
 };
 
